@@ -3,10 +3,12 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Ordinal Hunter&#x27;s Manual</title>
+        <title>Ordinal Theory Handbook</title>
         <meta name="robots" content="noindex" />
+
+
         <!-- Custom HTML head -->
-        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
@@ -17,25 +19,29 @@
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
         <link rel="stylesheet" href="css/print.css" media="print">
+
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
         <link rel="stylesheet" href="fonts/fonts.css">
+
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
         <link rel="stylesheet" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
+
     </head>
     <body>
+    <div id="body-container">
         <!-- Provide site root to javascript -->
-        <script type="text/javascript">
+        <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "coal" : "coal";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
-        <script type="text/javascript">
+        <script>
             try {
                 var theme = localStorage.getItem('mdbook-theme');
                 var sidebar = localStorage.getItem('mdbook-sidebar');
@@ -51,7 +57,7 @@
         </script>
 
         <!-- Set the theme before any content is loaded, prevents flash -->
-        <script type="text/javascript">
+        <script>
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
@@ -63,7 +69,7 @@
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
-        <script type="text/javascript">
+        <script>
             var html = document.querySelector('html');
             var sidebar = 'hidden';
             if (document.body.clientWidth >= 1080) {
@@ -76,7 +82,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="theory.html"><strong aria-hidden="true">1.</strong> Theory</a></li><li class="chapter-item expanded "><a href="block-explorer.html"><strong aria-hidden="true">2.</strong> Block Explorer</a></li><li class="chapter-item expanded "><a href="hunting.html"><strong aria-hidden="true">3.</strong> Hunting</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">4.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="bounty.html"><strong aria-hidden="true">5.</strong> Bounties</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="bounty/0.html"><strong aria-hidden="true">5.1.</strong> Bounty 0: 100,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="bounty/1.html"><strong aria-hidden="true">5.2.</strong> Bounty 1: 200,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="bounty/2.html"><strong aria-hidden="true">5.3.</strong> Bounty 2: 300,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="bounty/3.html"><strong aria-hidden="true">5.4.</strong> Bounty 3: 400,000 sats</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="overview.html"><strong aria-hidden="true">1.</strong> Overview</a></li><li class="chapter-item expanded "><a href="digital-artifacts.html"><strong aria-hidden="true">2.</strong> Digital Artifacts</a></li><li class="chapter-item expanded "><a href="inscriptions.html"><strong aria-hidden="true">3.</strong> Inscriptions</a></li><li class="chapter-item expanded "><a href="faq.html"><strong aria-hidden="true">4.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="donate.html"><strong aria-hidden="true">6.</strong> Donate</a></li><li class="chapter-item expanded "><a href="guides.html"><strong aria-hidden="true">7.</strong> Guides</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="guides/explorer.html"><strong aria-hidden="true">7.1.</strong> Explorer</a></li><li class="chapter-item expanded "><a href="guides/inscriptions.html"><strong aria-hidden="true">7.2.</strong> Inscriptions</a></li><li class="chapter-item expanded "><a href="guides/sat-hunting.html"><strong aria-hidden="true">7.3.</strong> Sat Hunting</a></li><li class="chapter-item expanded "><a href="guides/collecting.html"><strong aria-hidden="true">7.4.</strong> Collecting</a></li><li class="chapter-item expanded "><a href="guides/moderation.html"><strong aria-hidden="true">7.5.</strong> Moderation</a></li></ol></li><li class="chapter-item expanded "><a href="bounties.html"><strong aria-hidden="true">8.</strong> Bounties</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="bounty/0.html"><strong aria-hidden="true">8.1.</strong> Bounty 0: 100,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="bounty/1.html"><strong aria-hidden="true">8.2.</strong> Bounty 1: 200,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="bounty/2.html"><strong aria-hidden="true">8.3.</strong> Bounty 2: 300,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="bounty/3.html"><strong aria-hidden="true">8.4.</strong> Bounty 3: 400,000 sats</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -84,7 +90,7 @@
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                <div id="menu-bar-hover-placeholder"></div>
+                                <div id="menu-bar-hover-placeholder"></div>
                 <div id="menu-bar" class="menu-bar sticky bordered">
                     <div class="left-buttons">
                         <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
@@ -96,7 +102,7 @@
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
                             <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
@@ -105,7 +111,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Ordinal Hunter&#x27;s Manual</h1>
+                    <h1 class="menu-title">Ordinal Theory Handbook</h1>
 
                     <div class="right-buttons">
                         <a href="print.html" title="Print this book" aria-label="Print this book">
@@ -114,6 +120,7 @@
                         <a href="https://github.com/casey/ord" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
+
                     </div>
                 </div>
 
@@ -127,8 +134,9 @@
                         </ul>
                     </div>
                 </div>
+
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
-                <script type="text/javascript">
+                <script>
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
                     document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
                     Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
@@ -138,14 +146,36 @@
 
                 <div id="content" class="content">
                     <main>
-                        <p>Ordinals are a namespace for Bitcoin. For an overview, check out the <a href="theory.html">theory</a> page.</p>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p>This handbook is a guide to ordinal theory. Ordinal theory concerns itself with
+satoshis, giving them individual identities and allowing them to be tracked,
+transferred, and imbued with meaning.</p>
+<p>Satoshis, not bitcoin, are the atomic, native currency of the Bitcoin network.
+One bitcoin can be sub-divided into 100,000,000 satoshis, but no further.</p>
+<p>Ordinal theory does not require a sidechain or token aside from Bitcoin, and
+can be used without any changes to the Bitcoin network. It works right now.</p>
+<p>Ordinal theory imbues satoshis with numismatic value, allowing them to be
+collected and traded as curios.</p>
+<p>Individual satoshis can be inscribed with arbitrary content, creating unique
+Bitcoin-native digital artifacts that can be held in Bitcoin wallets and
+transferred using Bitcoin transactions. Inscriptions are as durable, immutable,
+secure, and decentralized as Bitcoin itself.</p>
+<p>Other, more unusual use-cases are possible: off-chain colored-coins, public key
+infrastructure with key rotation, a decentralized replacement for the DNS. For
+now though, such use-cases are speculative, and exist only in the minds of
+fringe ordinal theorists.</p>
+<p>For more details on ordinal theory, see the <a href="overview.html">overview</a>.</p>
+<p>For more details on inscriptions, see <a href="inscriptions.html">inscriptions</a>.</p>
+<p>When you're ready to get your hands dirty, a good place to start is with
+<a href="guides/inscriptions.html">inscriptions</a>, a curious species of digital artifact
+enabled by ordinal theory.</p>
 <h2 id="links"><a class="header" href="#links">Links</a></h2>
 <ul>
 <li><a href="https://github.com/casey/ord/">GitHub</a></li>
 <li><a href="https://github.com/casey/ord/blob/master/bip.mediawiki">BIP</a></li>
-<li><a href="https://discord.gg/87cjuz4FYg">Discord</a></li>
+<li><a href="https://discord.gg/ordinals">Discord</a></li>
 <li><a href="https://ordinals.com">Mainnet Block Explorer</a></li>
-<li><a href="https://ordinals.com">Signet Block Explorer</a></li>
+<li><a href="https://signet.ordinals.com">Signet Block Explorer</a></li>
 </ul>
 <h2 id="videos"><a class="header" href="#videos">Videos</a></h2>
 <ul>
@@ -153,56 +183,60 @@
 <li><a href="https://www.youtube.com/watch?v=MC_haVa6N3I">Ordinals Workshop with Rodarmor</a></li>
 <li><a href="https://www.youtube.com/watch?v=j5V33kV3iqo">Ordinal Art: Mint Your own NFTs on Bitcoin w/ @rodarmor</a></li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-theory"><a class="header" href="#ordinal-theory">Ordinal Theory</a></h1>
-<p>Ordinals are numbering scheme for satoshis that allows tracking and
-transferring individual sats. These numbers are called
-<a href="https://ordinals.com">ordinals</a>. Satoshis are numbered in the order in which
+<div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-theory-overview"><a class="header" href="#ordinal-theory-overview">Ordinal Theory Overview</a></h1>
+<p>Ordinals are a numbering scheme for satoshis that allows tracking and
+transferring individual sats. These numbers are called <a href="https://ordinals.com">ordinal
+numbers</a>. Satoshis are numbered in the order in which
 they're mined, and transferred from transaction inputs to transaction outputs
-in first-in-first-out order. More details are available in <a href="https://github.com/casey/ord/blob/master/bip.mediawiki">the
+first-in-first-out. Both the numbering scheme and the transfer scheme rely on
+<em>order</em>, the numbering scheme on the <em>order</em> in which satoshis are mined, and
+the transfer scheme on the <em>order</em> of transaction inputs and outputs. Thus the
+name, <em>ordinals</em>.</p>
+<p>Technical details are available in <a href="https://github.com/casey/ord/blob/master/bip.mediawiki">the
 BIP</a>.</p>
-<p>Ordinals don't require a separate token, another blockchain, or any changes to
-Bitcoin. They work right now.</p>
-<p>Ordinals have a few different representations:</p>
+<p>Ordinal theory does not require a separate token, another blockchain, or any
+changes to Bitcoin. It works right now.</p>
+<p>Ordinal numbers have a few different representations:</p>
 <ul>
 <li>
 <p><em>Integer notation</em>:
-<a href="https://ordinals.com/ordinal/2099994106992659"><code>2099994106992659</code></a>. The
-number is the ordinal number, and the &quot;°&quot; is the Romance language ordinal
-symbol.</p>
+<a href="https://ordinals.com/sat/2099994106992659"><code>2099994106992659</code></a> The
+ordinal number, assigned according to the order in which the satoshi was
+mined.</p>
 </li>
 <li>
 <p><em>Decimal notation</em>:
-<a href="https://ordinals.com/ordinal/3891094.16797"><code>3891094.16797</code></a>The first number
-is the block height in which the ordinal was created, the second the offset
-of the ordinal within the block.</p>
+<a href="https://ordinals.com/sat/3891094.16797"><code>3891094.16797</code></a> The first
+number is the block height in which the satoshi was mined, the second the
+offset of the satoshi within the block.</p>
 </li>
 <li>
 <p><em>Degree notation</em>:
-<a href="https://ordinals.com/ordinal/3%C2%B0111094%E2%80%B2214%E2%80%B316797%E2%80%B4"><code>3°111094′214″16797‴</code></a>.
+<a href="https://ordinals.com/sat/3%C2%B0111094%E2%80%B2214%E2%80%B316797%E2%80%B4"><code>3°111094′214″16797‴</code></a>.
 We'll get to that in a moment.</p>
 </li>
 <li>
 <p><em>Percentile notation</em>:
-<a href="https://ordinals.com/ordinal/99.99971949060254%25"><code>99.99971949060254%</code></a> .
-The ordinals position in Bitcoin's supply, expressed as a percentage.</p>
+<a href="https://ordinals.com/sat/99.99971949060254%25"><code>99.99971949060254%</code></a> .
+The satoshi's position in Bitcoin's supply, expressed as a percentage.</p>
 </li>
 <li>
-<p><em>Name</em>: <a href="https://ordinals.com/ordinal/satoshi"><code>satoshi</code></a>. An encoding of the
+<p><em>Name</em>: <a href="https://ordinals.com/sat/satoshi"><code>satoshi</code></a>. An encoding of the
 ordinal number using the characters <code>a</code> through <code>z</code>.</p>
 </li>
 </ul>
 <p>Arbitrary assets, such as NFTs, security tokens, accounts, or stablecoins can
-be attached to Ordinals.</p>
+be attached to satoshis using ordinal numbers as stable identifiers.</p>
 <p>Ordinals is an open-source project, developed <a href="https://github.com/casey/ord">on
 GitHub</a>. The project consists of a BIP describing
 the ordinal scheme, an index that communicates with a Bitcoin Core node to
-track the location of all ordinals, a wallet that allows making ordinal-aware
+track the location of all satoshis, a wallet that allows making ordinal-aware
 transactions, a block explorer for interactive exploration of the blockchain,
-functionality for minting ordinal NFTs, and this manual.</p>
+functionality for inscribing satoshis with digital artifacts, and this manual.</p>
 <h2 id="rarity"><a class="header" href="#rarity">Rarity</a></h2>
-<p>Humans are collectors, and since ordinals can be tracked and transferred,
+<p>Humans are collectors, and since satoshis can now be tracked and transferred,
 people will naturally want to collect them. Ordinal theorists can decide for
-themselves which sats are rare and desirable, but there are some hints.</p>
+themselves which sats are rare and desirable, but there are some hints…</p>
 <p>Bitcoin has periodic events, some frequent, some more uncommon, and these
 naturally lend themselves to a system of rarity. These periodic events are:</p>
 <ul>
@@ -236,7 +270,7 @@ years. The first conjunction should happen some time in 2032.</p>
 <li><code>mythic</code>: The first sat of the genesis block</li>
 </ul>
 <p>Which brings us to degree notation, which unambiguously represents an ordinal
-in a way that makes rarity easy to see at a glance:</p>
+number in a way that makes the rarity of a satoshi easy to see at a glance:</p>
 <pre><code>A°B′C″D‴
 │ │ │ ╰─ Index of sat in the block
 │ │ ╰─── Index of block in difficulty adjustment period
@@ -245,56 +279,56 @@ in a way that makes rarity easy to see at a glance:</p>
 </code></pre>
 <p>Ordinal theorists often use the terms &quot;hour&quot;, &quot;minute&quot;, &quot;second&quot;, and &quot;third&quot;
 for <em>A</em>, <em>B</em>, <em>C</em>, and <em>D</em>, respectively.</p>
-<p>Now for some examples. This ordinal is common:</p>
+<p>Now for some examples. This satoshi is common:</p>
 <pre><code>1°1′1″1‴
 │ │ │ ╰─ Not first sat in block
 │ │ ╰─── Not first block in difficutly adjustment period
 │ ╰───── Not first block in halving epoch
 ╰─────── Second cycle
 </code></pre>
-<p>This ordinal is uncommon:</p>
+<p>This satoshi is uncommon:</p>
 <pre><code>1°1′1″0‴
 │ │ │ ╰─ First sat in block
 │ │ ╰─── Not first block in difficutly adjustment period
 │ ╰───── Not first block in halving epoch
 ╰─────── Second cycle
 </code></pre>
-<p>This ordinal is rare:</p>
+<p>This satoshi is rare:</p>
 <pre><code>1°1′0″0‴
 │ │ │ ╰─ First sat in block
 │ │ ╰─── First block in difficulty adjustment period
 │ ╰───── Not the first block in halving epoch
 ╰─────── Second cycle
 </code></pre>
-<p>This ordinal is epic:</p>
+<p>This satoshi is epic:</p>
 <pre><code>1°0′1″0‴
 │ │ │ ╰─ First sat in block
 │ │ ╰─── Not first block in difficulty adjustment period
 │ ╰───── First block in halving epoch
 ╰─────── Second cycle
 </code></pre>
-<p>This ordinal is legendary:</p>
+<p>This satoshi is legendary:</p>
 <pre><code>1°0′0″0‴
 │ │ │ ╰─ First sat in block
 │ │ ╰─── First block in difficulty adjustment period
 │ ╰───── First block in halving epoch
 ╰─────── Second cycle
 </code></pre>
-<p>And this ordinal is mythic:</p>
+<p>And this satoshi is mythic:</p>
 <pre><code>0°0′0″0‴
 │ │ │ ╰─ First sat in block
 │ │ ╰─── First block in difficulty adjustment period
 │ ╰───── First block in halving epoch
 ╰─────── First cycle
 </code></pre>
-<p>If the block offset is zero, it may be omitted. This is the uncommon ordinal
+<p>If the block offset is zero, it may be omitted. This is the uncommon satoshi
 from above:</p>
 <pre><code>1°1′1″
 │ │ ╰─ Not first block in difficutly adjustment period
 │ ╰─── Not first block in halving epoch
 ╰───── Second cycle
 </code></pre>
-<h2 id="ordinal-supply"><a class="header" href="#ordinal-supply">Ordinal Supply</a></h2>
+<h2 id="rare-satoshi-supply"><a class="header" href="#rare-satoshi-supply">Rare Satoshi Supply</a></h2>
 <h3 id="total-supply"><a class="header" href="#total-supply">Total Supply</a></h3>
 <ul>
 <li><code>common</code>: 2.1 quadrillion</li>
@@ -313,26 +347,33 @@ from above:</p>
 <li><code>legendary</code>: 0</li>
 <li><code>mythic</code>: 1</li>
 </ul>
-<p>At the moment, even uncommon ordinals are quite rare. As of this writing,
-745,855 uncommon ordinals have been mined - one per 25.6 bitcoin in
+<p>At the moment, even uncommon satoshis are quite rare. As of this writing,
+745,855 uncommon satoshis have been mined - one per 25.6 bitcoin in
 circulation.</p>
 <h2 id="names"><a class="header" href="#names">Names</a></h2>
-<p>Each ordinal has a name, consisting of the letters <em>A</em> through <em>Z</em>, that get
-shorter the larger the ordinal is. They could start short and get longer, but
-then all the good, short names would be trapped in the unspendable genesis
-block.</p>
+<p>Each satoshi has a name, consisting of the letters <em>A</em> through <em>Z</em>, that get
+shorter the further into the future the satoshi was mined. They could start
+short and get longer, but then all the good, short names would be trapped in
+the unspendable genesis block.</p>
 <p>As an example, 1905530482684727°'s name is &quot;iaiufjszmoba&quot;. The name of the last
-ordinal to be mined is &quot;a&quot;. Every combination of 10 characters or less is out
+satoshi to be mined is &quot;a&quot;. Every combination of 10 characters or less is out
 there, or will be out there, some day.</p>
 <h2 id="exotics"><a class="header" href="#exotics">Exotics</a></h2>
-<p>Ordinals may be prized for reasons other than their name or rarity. This might
+<p>Satoshis may be prized for reasons other than their name or rarity. This might
 be due to a quality of the number itself, like having an integer square or cube
 root. Or it might be due to a connection to a historical event, such as
-ordinals from block 477,120, the block in which SegWit activated, or ordinal
-2099999997689999°, the last ordinal that will ever be mined.</p>
-<p>Such ordinals are termed &quot;exotic&quot;. Which ordinals are exotic and what makes
-them so is subjective. Ordinal theorists are are encouraged to seek out exotics
+satoshis from block 477,120, the block in which SegWit activated,
+2099999997689999°, the last satoshi that will ever be mined.</p>
+<p>Such satoshis are termed &quot;exotic&quot;. Which satoshis are exotic and what makes
+them so is subjective. Ordinal theorists are encouraged to seek out exotics
 based on criteria of their own devising.</p>
+<h2 id="inscriptions"><a class="header" href="#inscriptions">Inscriptions</a></h2>
+<p>Satoshis can be inscribed with arbitrary content, creating Bitcoin-native
+digital artifacts. Inscribing is done by sending the satoshi to be inscribed in
+a transaction that reveals the inscription content on-chain. This content is
+then inextricably linked to that satoshi, turning it into an immutable digital
+artifact that can be tracked, transferred, hoarded, bought, sold, lost, and
+rediscovered.</p>
 <h2 id="archaeology"><a class="header" href="#archaeology">Archaeology</a></h2>
 <p>A lively community of archaeologists devoted to cataloging and collecting early
 NFTs has sprung up. <a href="https://mirror.xyz/chainleft.eth/MzPWRsesC9mQflxlLo-N29oF4iwCgX3lacrvaG9Kjko">Here's a great summary of historical NFTs by
@@ -355,7 +396,7 @@ Bitcoin to the Bitocin Talk
 forum</a>. This wasn't an asset
 scheme, but did use the ordinal algorithm, and was implemented but never
 deployed.</p>
-<p>On October 8th, 2012, jl2012 <a href="https://bitcointalk.org/index.php?topic=117224.0">posted a scheme to the the same
+<p>On October 8th, 2012, jl2012 <a href="https://bitcointalk.org/index.php?topic=117224.0">posted a scheme to the same
 forum</a> which uses decimal
 notation and has all the important properties of ordinals. The scheme was
 discussed but never implemented.</p>
@@ -365,10 +406,464 @@ inevitability of the mathematics of Bitcoin, stemming not from their modern
 documentation, but from their ancient genesis. They are the culmination of a
 sequence of events set in motion with the mining of the first block, so many
 years ago.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-block-explorer"><a class="header" href="#ordinal-block-explorer">Ordinal Block Explorer</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="digital-artifacts"><a class="header" href="#digital-artifacts">Digital Artifacts</a></h1>
+<p>Imagine a physical artifact. A rare coin, say, held safe for untold years in
+the dark, secret clutch of a Viking hoard, now dug from the earth by your
+grasping hands. It…</p>
+<p>…has an owner. You. As long as you keep it safe, nobody can take it from you.</p>
+<p>…is complete. It has no missing parts.</p>
+<p>…can only be changed by you. If you were a trader, and you made your way to
+18th century China, none but you could stamp it with your chop-mark.</p>
+<p>…can only be disposed of by you. The sale, trade, or gift is yours to make,
+to whomever you wish.</p>
+<p>What are digital artifacts? Simply put, they are the digital equivalent of
+physical artifacts.</p>
+<p>For a digital thing to be a digital artifact, it must be like that coin of
+yours:</p>
+<ul>
+<li>
+<p>Digital artifacts can have owners. A number is not a digital artifact,
+because nobody can own it.</p>
+</li>
+<li>
+<p>Digital artifacts are complete. An NFT that points to off-chain content
+on IPFS or Arweave is incomplete, and thus not a digital artifacts.</p>
+</li>
+<li>
+<p>Digital artifacts are permissionless. An NFT which cannot be sold without
+paying a royalty is not permissionless, and thus not a digital artifact.</p>
+</li>
+<li>
+<p>Digital artifacts are uncensorable. Perhaps you can change a database entry
+on a centralized ledger today, but maybe not tomorrow, and thus one cannot be
+a digital artifact.</p>
+</li>
+<li>
+<p>Digital artifacts are immutable. An NFT with an upgrade key is not a digital
+artifact.</p>
+</li>
+</ul>
+<p>The definition of a digital artifact is intended to reflect what NFTs <em>should</em>
+be, sometimes are, and what inscriptions <em>always</em> are, by their very nature.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="inscriptions-1"><a class="header" href="#inscriptions-1">Inscriptions</a></h1>
+<p>Inscriptions inscribe sats with arbitrary content, creating bitcoin-native
+digital artifacts, more commonly known as NFTs. Inscriptions do not require a
+sidechain or separate token.</p>
+<p>These inscribed sats can then be transferred using bitcoin transactions, sent
+to bitcoin addresses, and held in bitcoin UTXOs. These transactions, addresses,
+and UTXOs are normal bitcoin transactions, addresses, and UTXOS in all
+respects, with the exception that in order to send individual sats,
+transactions must control the order and value of inputs and outputs according
+to ordinal theory.</p>
+<p>The inscription content model is that of the web. An inscription consists of a
+content type, also known as a MIME type, and the content itself, which is a
+byte string. This allows inscription content to be returned from a web server,
+and for creating HTML inscriptions that use and remix the content of other
+inscriptions.</p>
+<p>Inscription content is entirely on-chain, stored in taproot script-path spend
+scripts. Taproot scripts have very few restrictions on their content, and
+additionally receive the witness discount, making inscription content storage
+relatively economical.</p>
+<p>Since taproot script spends can only be made from existing taproot outputs,
+inscriptions are made using a two-phase commit/reveal procedure. First, in the
+commit transaction, a taproot output committing to a script containing the
+inscription content is created. Second, in the reveal transaction, the output
+created by the commit transaction is spent, revealing the inscription content
+on-chain.</p>
+<p>Inscription content is serialized using data pushes within unexecuted
+conditionals, called an &quot;envelopes&quot;. Envelopes consist of an <code>OP_FALSE OP_IF … OP_ENDIF</code> wrapping any number of data pushes. Because envelopes are effectively
+no-ops, they do not change the semantics of the script in which they are
+included, and can be combined with any other locking script.</p>
+<p>A text inscription containing the string &quot;Hello, world!&quot; is serialized as
+follows:</p>
+<pre><code>OP_FALSE
+OP_IF
+  OP_PUSH &quot;ord&quot;
+  OP_1
+  OP_PUSH &quot;text/plain;charset=utf-8&quot;
+  OP_0
+  OP_PUSH &quot;Hello, world!&quot;
+OP_ENDIF
+</code></pre>
+<p>First the string <code>ord</code> is pushed, to disambiguate inscriptions from other uses
+of envelopes.</p>
+<p><code>OP_1</code> indicates that the next push contains the content type, and <code>OP_0</code>
+indicates that subsequent data pushes contain the content itself. Multiple data
+pushes must be used for large inscriptions, as one of taproot's few
+restrictions is that individual data pushes may not be larger than 520 bytes.</p>
+<p>The inscription content is contained within the input of a reveal transaction,
+and the inscription is made on the first sat of its first output. This sat can
+then be tracked using the familiar rules of ordinal theory, allowing it to be
+transferred, bought, sold, lost to fees, and recovered.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-theory-faq"><a class="header" href="#ordinal-theory-faq">Ordinal Theory FAQ</a></h1>
+<h2 id="what-is-ordinal-theory"><a class="header" href="#what-is-ordinal-theory">What is ordinal theory?</a></h2>
+<p>Ordinal theory is is a protocol for assigning serial numbers to satoshis, the
+smallest subdivision of a bitcoin, and tracking those satoshis as they are
+spent by transactions.</p>
+<p>These serial numbers are large numbers, like this 804766073970493. Every
+satoshi, which is ¹⁄₁₀₀₀₀₀₀₀₀ of a bitcoin, has an ordinal number.</p>
+<h2 id="does-ordinal-theory-require-a-side-chain-a-separate-token-or-changes-to-bitcoin"><a class="header" href="#does-ordinal-theory-require-a-side-chain-a-separate-token-or-changes-to-bitcoin">Does ordinal theory require a side chain, a separate token, or changes to Bitcoin?</a></h2>
+<p>Nope! Ordinal theory works right now, without a side chain, and the only token
+needed is bitcoin itself.</p>
+<h2 id="what-is-ordinal-theory-good-for"><a class="header" href="#what-is-ordinal-theory-good-for">What is ordinal theory good for?</a></h2>
+<p>Collecting, trading, and scheming. Ordinal theory assigns identities to
+individual satoshis, allowing them to be individually tracked and traded, as
+curios and for numismatic value.</p>
+<p>Ordinal theory also enables inscriptions, a protocol for attaching arbitrary
+content to individual satoshis, turning them into bitcoin-native digital
+artifacts.</p>
+<h2 id="how-does-ordinal-theory-work"><a class="header" href="#how-does-ordinal-theory-work">How does ordinal theory work?</a></h2>
+<p>Ordinal numbers are assigned to satoshis in the order in which they are mined.
+The first satoshi in the first block has ordinal number 0, the second has
+ordinal number 1, and the last satoshi of the first block has ordinal number
+4,999,999,999.</p>
+<p>Satoshis live in outputs, but transactions destroy outputs and create new ones,
+so ordinal theory uses an algorithm to determine how satoshis hop from the
+inputs of a transaction to its outputs.</p>
+<p>Fortunately, that algorithm is very simple.</p>
+<p>Satoshis transfer in first-in-first-out order. Think of the inputs to a
+transaction as being a list of satoshis, and the outputs as a list of slots,
+waiting to receive a satoshi. To assign input satoshis to slots, go through
+each satoshi in the inputs in order, and assign each to the first available
+slot in the outputs.</p>
+<p>Let's imagine a transaction with three inputs and two outputs. The inputs are
+on the left of the arrow and the outputs are on the right, all labeled with
+their values:</p>
+<pre><code>[2] [1] [3] → [4] [2]
+</code></pre>
+<p>Now let's label the same transaction with the ordinal numbers of the satoshis
+that each input contains, and question marks for each output slot. Ordinal
+numbers are large, so let's use letters to represent them:</p>
+<pre><code>[a b] [c] [d e f] → [? ? ? ?] [? ?]
+</code></pre>
+<p>To figure out which satoshi goes to which output, go through the input satoshis
+in order and assign each to a question mark:</p>
+<pre><code>[a b] [c] [d e f] → [a b c d] [e f]
+</code></pre>
+<p>What about fees, you might ask? Good question! Let's imagine the same
+transaction, this time with a two satoshi fee. Transactions with fees send more
+satoshis in the inputs than are received by the outputs, so to make our
+transaction into one that pays fees, we'll remove the second output:</p>
+<pre><code>[2] [1] [3] → [4]
+</code></pre>
+<p>The satoshis <var>e</var> and <var>f</var> now have nowhere to go in the
+outputs:</p>
+<pre><code>[a b] [c] [d e f] → [a b c d]
+</code></pre>
+<p>So they go to the miner who mined the block as fees. <a href="https://github.com/casey/ord/blob/master/bip.mediawiki">The
+BIP</a> has the details,
+but in short, fees paid by transactions are treated as extra inputs to the
+coinbase transaction, and are ordered how their corresponding transactions are
+ordered in the block. The coinbase transaction of the block might look like
+this:</p>
+<pre><code>[SUBSIDY] [e f] → [SUBSIDY e f]
+</code></pre>
+<h2 id="where-can-i-find-the-nitty-gritty-details"><a class="header" href="#where-can-i-find-the-nitty-gritty-details">Where can I find the nitty-gritty details?</a></h2>
+<p><a href="https://github.com/casey/ord/blob/master/bip.mediawiki">The BIP!</a></p>
+<h2 id="why-are-sat-inscriptions-called-digital-artifacts-instead-of-nfts"><a class="header" href="#why-are-sat-inscriptions-called-digital-artifacts-instead-of-nfts">Why are sat inscriptions called &quot;digital artifacts&quot; instead of &quot;NFTs&quot;?</a></h2>
+<p>An inscription is an NFT, but the term &quot;digital artifact&quot; is used instead,
+because it's simple, suggestive, and familiar.</p>
+<p>The phrase &quot;digital artifact&quot; is highly suggestive, even to someone who has
+never heard the term before. In comparison, NFT is an acronym, and doesn't
+provide any indication of what it means if you haven't heard the term before.</p>
+<p>Additionally, &quot;NFT&quot; feels like financial terminology, and the both word
+&quot;fungible&quot; and sense of the word &quot;token&quot; as used in &quot;NFT&quot; is uncommon outside
+of financial contexts.</p>
+<h2 id="how-do-sat-inscriptions-compare-to"><a class="header" href="#how-do-sat-inscriptions-compare-to">How do sat inscriptions compare to…</a></h2>
+<h3 id="ethereum-nfts"><a class="header" href="#ethereum-nfts">Ethereum NFTs?</a></h3>
+<p><em>Inscriptions are always immutable.</em></p>
+<p>There is simply no way to for the creator of an inscription, or the owner of an
+inscription, to modify it after it has been created.</p>
+<p>Ethereum NFTs <em>can</em> be immutable, but many are not, and can be changed or
+deleted by the NFT contract owner.</p>
+<p>In order to make sure that a particular Ethereum NFT is immutable, the contract
+code must be audited, which requires detailed knowledge of the EVM and Solidity
+semantics.</p>
+<p>It is very hard for a non-technical user to determine whether or not a given
+Ethereum NFT is mutable or immutable, and Ethereum NFT platforms make no effort
+to distinguish whether an NFT is mutable or immutable, and whether the contract
+source code is available and has been audited.</p>
+<p><em>Inscription content is always on-chain.</em></p>
+<p>There is no way for an inscription to refer to off-chain content. This makes
+inscriptions more durable, because content cannot be lost, and scarcer, because
+inscription creators must pay fees proportional to the size of the content.</p>
+<p>Some Ethereum NFT content is on-chain, but much is off-chain, and is stored on
+platforms like IPFS or Arweave, or on traditional, fully centralized web
+servers. Content on IPFS is not guaranteed to continue to be available, and
+some NFT content stored on IPFS has already been lost. Platforms like Arweave
+rely on weak economic assumptions, and will likely fail catastrophically when
+these economic assumptions are no longer met. Centralized web servers may
+disappear at any time.</p>
+<p>It is very hard for a non-technical user to determine where the content of a
+given Ethereum NFT is stored.</p>
+<p><em>Inscriptions are much simpler.</em></p>
+<p>Ethereum NFTs depend on the Ethereum network and virtual machine, which are
+highly complex, constantly changing, and which introduce changes via
+backwards-incompatible hard forks.</p>
+<p>Inscriptions, on the other hand, depend on the Bitcoin blockchain, which is
+relatively simple and conservative, and which introduces changes via
+backwards-compatible soft forks.</p>
+<p><em>Inscriptions are more secure.</em></p>
+<p>Inscriptions inherit Bitcoin's transaction model, which allow a user to see
+exactly which inscriptions are being transferred by a transaction before they
+sign it. Inscriptions can be offered for sale using partially signed
+transactions, which don't require allowing a third party, such as an exchange
+or marketplace, to transfer them on the user's behalf.</p>
+<p>By comparison, Ethereum NFTs are plagued with end-user security
+vulnerabilities. It is commonplace to blind-sign transactions, grant
+third-party apps unlimited permissions over a user's NFTs, and interact with
+complex and unpredictable smart contracts. This creates a minefield of hazards
+for Ethereum NFT users which are simply not a concern for ordinal theorists.</p>
+<p><em>Inscriptions are scarcer.</em></p>
+<p>Inscriptions require bitcoin to mint, transfer, and store. This seems like a
+downside on the surface, but the raison d'etre of digital artifacts is to be
+scarce and thus valuable.</p>
+<p>Ethereum NFTs, on the other hand, can be minted in virtually unlimited
+qualities with a single transaction, making them inherently less scarce, and
+thus, potentially less valuable.</p>
+<p><em>Inscriptions do not pretend to support on-chain royalties.</em></p>
+<p>On-chain royalties are a good idea in theory but not in practice. Royalty
+payment cannot be enforced on-chain without complex and invasive restrictions.
+The Ethereum NFT ecosystem is currently grappling with confusion around
+royalties, and is collectively coming to grips with the reality that on-chain
+royalties, which were messaged to artists as an advantage of NFTs, are not
+possible, while platforms race to the bottom and remove royalty support.</p>
+<p>Inscriptions avoid this situation entirely by making no false promises of
+supporting royalties on-chain, thus avoiding the confusion, chaos, and
+negativity of the Ethereum NFT situation.</p>
+<p><em>Inscriptions unlock new markets.</em></p>
+<p>Bitcoin's market capitalization and liquidity are greater than Ethereum's by a
+large margin. Much of this liquidity is not available to Ethereum NFTs, since
+many Bitcoiners prefer not to interact with the Ethereum ecosystem due to
+concerns related to simplicity, security, and decentralization.</p>
+<p>Such Bitcoiners may be more interested in inscriptions than Ethereum NFTs,
+unlocking new classes of collector.</p>
+<p><em>Inscriptions have a richer data model.</em></p>
+<p>Inscriptions consist of a content type, also known as a MIME type, and content,
+which is an arbitrary byte string. This is the same data model used by the web,
+and allows inscription content to evolve with the web, and come to support any
+kind of content supported by web browsers, without requiring changes to the
+underlying protocol.</p>
+<h3 id="rgb-and-taro-assets"><a class="header" href="#rgb-and-taro-assets">RGB and Taro assets?</a></h3>
+<p>RGB and Taro are both second-layer asset protocols built on Bitcoin. Compared
+to inscriptions, they are much more complicated, but much more featureful.</p>
+<p>Ordinal theory has been designed from the ground up for digital artifacts,
+whereas the primary use-case of RGB and Taro are fungible tokens, so the user
+experience for inscriptions is likely to be simpler and more polished than the
+user experience for RGB and Taro NFTs.</p>
+<p>RGB and Taro both store content off-chain, which requires additional
+infrastructure, and which may be lost. By contrast, inscription content is
+stored on-chain, and cannot be lost.</p>
+<p>Ordinal theory, RGB, and Taro are all very early, so this is speculation, but
+ordinal theory's focus may give it the edge in terms of features for digital
+artifacts, including a better content model, and features like globally unique
+symbols.</p>
+<h3 id="counterparty-assets"><a class="header" href="#counterparty-assets">Counterparty assets?</a></h3>
+<p>Counterparty has its own token, XCP, which is required for some functionality,
+which makes most bitcoiners regard it as an altcoin, and not an extension or
+second layer for bitcoin.</p>
+<p>Ordinal theory has been designed from the ground up for digital artifacts,
+whereas Counterparty was primarily designed for financial token issuance.</p>
+<h2 id="inscriptions-for"><a class="header" href="#inscriptions-for">Inscriptions for…</a></h2>
+<h3 id="artists"><a class="header" href="#artists">Artists</a></h3>
+<p><em>Inscriptions are on Bitcoin.</em> Bitcoin is the digital currency with the highest
+status and greatest chance of long-term survival. If you want to guarantee that
+your art survives into the future, there is no better way to publish it than as
+inscriptions.</p>
+<p><em>Cheaper on-chain storage.</em> At $20,000 per BTC and the minimum relay fee of 1
+satoshi per vbyte, publishing inscription content costs $50 per 1 million
+bytes.</p>
+<p><em>Inscriptions are early!</em> Inscriptions are still in development, and have not
+yet launched on mainnet. This gives you an opportunity to be an early adopter,
+and explore the medium as it evolves.</p>
+<p><em>Inscriptions are simple.</em> Inscriptions do not require writing or understanding
+smart contracts.</p>
+<p><em>Inscriptions unlock new liquidity.</em> Inscriptions are more accessible and
+appealing to bitcoin holders, unlocking an entirely new class of collector.</p>
+<p><em>Inscriptions are designed for digital artifacts.</em> Inscriptions are designed
+from the ground up to support NFTs, and feature a better data model, and
+features like globally unique symbols and enhanced provenance.</p>
+<p><em>Inscriptions do not support on-chain royalties.</em> This is negative, but only
+depending on how you look at it. On-chain royalties have been a boon for
+creators, but have also created a huge amount of confusion in the Ethereum NFT
+ecosystem. The ecosystem now grapples with this issue, and is is engaged in a
+race to the bottom, towards a royalties-optional future. Inscriptions have no
+support for on-chain royalties, because they are technically infeasible. If you
+choose to create inscriptions, there are many ways you can work around this
+limitation: withhold a portion of your inscriptions for future sale, to benefit
+from future appreciation, or perhaps offer perks for users who respect optional
+royalties.</p>
+<h3 id="collectors"><a class="header" href="#collectors">Collectors</a></h3>
+<p><em>Inscriptions are simple, clear, and have no surprises.</em> They are always
+immutable and on-chain, with no special due diligence required.</p>
+<p><em>Inscriptions are on Bitcoin.</em> You can verify the location and properties of
+inscriptions easily with Bitcoin full node that you control.</p>
+<h3 id="bitcoiners"><a class="header" href="#bitcoiners">Bitcoiners</a></h3>
+<p>Let me begin this section by saying: the most important thing that the Bitcoin
+network does is decentralize money. All other use-cases are secondary,
+including ordinal theory. The developers of ordinal theory understand and
+acknowledge this, and believe that ordinal theory helps, at least in a small
+way, Bitcoin's primary mission.</p>
+<p>Unlike many other things in the altcoin space, digital artifacts have merit.
+There are, of course, a great deal of NFTs that are ugly, stupid, and
+fraudulent. However, there are many that are fantastically creative, and
+creating and collecting art has been a part of the human story since its
+inception, and predates even trade and money, which are also ancient
+technologies.</p>
+<p>Bitcoin provides an amazing platform for creating and collecting digital
+artifacts in a secure, decentralized way, that protects users and artists in
+the same way that it provides an amazing platform for sending and receiving
+value, and for all the same reasons.</p>
+<p>Ordinals and inscriptions increase demand for Bitcoin block space, which
+increase Bitcoin's security budget, which is vital for safeguarding Bitcoin's
+transition to a fee-dependent security model, as the block subsidy is halved
+into insignificance.</p>
+<p>Inscription content is stored on-chain, and thus the demand for block space for
+use in inscriptions is unlimited. This creates a buyer of last resort for <em>all</em>
+Bitcoin block space. This will help support a robust fee market, which ensures
+that Bitcoin remains secure.</p>
+<p>Inscriptions also counter the narrative that Bitcoin cannot be extended or used
+for new use-cases. If you follow projects like DLCs, Fedimint, Lightning, Taro,
+and RGB, you know that this narrative is false, but inscriptions provide a
+counter argument which is easy to understand, and which targets a popular and
+proven use case, NFTs, which makes it highly legible.</p>
+<p>If inscriptions prove, as the authors hope, to be highly sought after digital
+artifacts with a rich history, they will serve as a powerful hook for Bitcoin
+adoption: come for the fun, rich art, stay for the decentralized digital money.</p>
+<p>Inscriptions are an extremely benign source of demand for block space. Unlike,
+for example, stablecoins, which potentially give large stablecoin issuers
+influence over the future of Bitcoin development, or DeFi, which might
+centralize mining by introducing opportunities for MEV, digital art and
+collectables on Bitcoin, are unlikely to produce individual entities with
+enough power to corrupt Bitcoin. Art is decentralized.</p>
+<p>Inscription users and service providers are incentivized to run Bitcoin full
+nodes, to publish and track inscriptions, and thus throw their economic weight
+behind the honest chain.</p>
+<p>Ordinal theory and inscriptions do not meaningfully affect Bitcoin's
+fungibility. Bitcoin users can ignore both and be unaffected.</p>
+<p>We hope that ordinal theory strengthens and enriches bitcoin, and gives it
+another dimension of appeal and functionality, enabling it more effectively
+serve its primary use case as humanity's decentralized store of value.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-to-ord"><a class="header" href="#contributing-to-ord">Contributing to <code>ord</code></a></h1>
+<h2 id="suggested-steps"><a class="header" href="#suggested-steps">Suggested Steps</a></h2>
+<ol>
+<li>Find an issue you want to work on.</li>
+<li>Figure out what would be a good first step towards resolving the issue. This
+could be in the form of code, research, a proposal, or suggesting that it be
+closed, if it's out of date or not a good idea in the first place.</li>
+<li>Comment on the issue with an outline of your suggested first step, and
+asking for feedback. Of course, you can dive in and start writing code or
+tests immediately, but this avoids potentially wasted effort, if the issue
+is out of date, not clearly specified, blocked on something else, or
+otherwise not ready to implement.</li>
+<li>If the issue requires a code change or bugfix, open a draft PR with tests,
+and ask for feedback. This makes sure that everyone is on the same page
+about what needs to be done, or what the first step in solving the issue
+should be. Also, since tests are required, writing the tests first makes it
+easy to confirm that the change can be tested easily.</li>
+<li>Mash the keyboard randomly until the tests pass, and refactor until the code
+is ready to submit.</li>
+<li>Mark the PR as ready to review.</li>
+<li>Revise the PR as needed.</li>
+<li>And finally, mergies!</li>
+</ol>
+<h2 id="start-small"><a class="header" href="#start-small">Start small</a></h2>
+<p>Small changes will allow you to make an impact
+quickly, and if you take the wrong tack, you won't have wasted much time.</p>
+<p>Ideas for small issues:</p>
+<ul>
+<li>Add a new test or test case that increases test coverage</li>
+<li>Add or improve documentation</li>
+<li>Find an issue that needs more research, and do that research and summarize it
+in a comment</li>
+<li>Find an out-of-date issue and comment that it can be closed</li>
+<li>Find an issue that shouldn't be done, and provide constrictive feedback
+detailing why you think that is the case</li>
+</ul>
+<h2 id="merge-early-and-often"><a class="header" href="#merge-early-and-often">Merge early and often</a></h2>
+<p>Break up large tasks into multiple smaller steps that individually make
+progress. If there's a bug, you can open a PR that adds a failing ignored test.
+This can be merged, and the next step can be to fix the bug and unignore the
+test. Do research or testing, and report on your results. Break a feature into
+small sub-features, and implement them one at a time.</p>
+<p>Figuring out how to break down a larger PR into smaller PRs where each can be
+merged is a art form well-worth practicing. The hard part is that each PR must
+itself be an improvement.</p>
+<p>I strive to follow this advice myself, and am always better off when I do.</p>
+<p>Small changes are fast to write, review, and merge, which is much more fun than
+laboring over a single giant PR that takes forever to write, review, and merge.
+Small changes don't take much time, so if you need to stop working on a small
+change, you won't have wasted much time as compared to a larger change that
+represents many hours of work. Getting a PR in quickly improves the project a
+little bit immediately, instead of having to wait a long time for larger
+improvement. Small changes are less likely to accumulate merge conflict. As the
+Athenians said: <em>The fast commit what they will, the slow merge what they
+must.</em></p>
+<h2 id="get-help"><a class="header" href="#get-help">Get help</a></h2>
+<p>If you're stuck for more than 15 minutes, ask for help, like a Rust Discord,
+Stack Exchange, or in a project issue or discussion.</p>
+<h2 id="practice-hypothesis-driven-debugging"><a class="header" href="#practice-hypothesis-driven-debugging">Practice hypothesis-driven debugging</a></h2>
+<p>Formulate a hypothesis as to what is causing the problem. Figure out how to
+test that hypothesis. Perform that tests. If it works, great, you fixed the
+issue or now you know how to fix the issue. If not, repeat with a new
+hypothesis.</p>
+<h2 id="pay-attention-to-error-messages"><a class="header" href="#pay-attention-to-error-messages">Pay attention to error messages</a></h2>
+<p>Read all error messages and don't tolerate warnings.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="donate"><a class="header" href="#donate">Donate</a></h1>
+<p>Ordinals is an open-source project by me, Casey Rodarmor, in development since
+early 2022. I have been assisted by a ragtag band of contributors, bitcoiners,
+and degenerates, including two paid apprentices. All project costs have been
+paid out of pocket by me, and I have not raised outside funds, and may never.</p>
+<p>If you so desire, consider a donation. Donations of bitcoin are appreciated,
+but donations of rare, exotic, and inscribed sats are especially treasured.</p>
+<p>Donations are not tax-deductible, refundable, or earmarked for any specific
+purpose. They are personal gifts to me, made out of love, support,
+encouragement, or in the vain hope that if I get enough bitcoin I'll stop doing
+all this and go away.</p>
+<p>Donations may be sold, lost, given away, or held until death. Donations of
+bitcoin are likely to be spent on rare and exotic sats and making whole-block
+inscriptions.</p>
+<p>Ordinals and inscriptions are a love letter to Bitcoin, the Internet,
+programming, and the World Wide Web. Money is nice, but that's not why I'm
+doing it. Don't worry if you can't donate. Merely using this strange, evolving
+creation is thanks enough. I love having you along for the ride, wherever it
+may take us.</p>
+<p>I have in my possession <a href="https://www.youtube.com/watch?v=bLOlsa6K5TI">21
+opendimes</a> whose addresses are
+below.</p>
+<p>Pick one that speaks to you, and send to it what you will.</p>
+<p>Love,
+Casey</p>
+<ol>
+<li><a href="https://mempool.space/address/13aG4o1cEKVLzuLdwKrmmP65o6WKh8t4L3"><code>13aG4o1cEKVLzuLdwKrmmP65o6WKh8t4L3</code></a></li>
+<li><a href="https://mempool.space/address/1FrhgVqWF7aSM9945BRsrEqQZFEM3kZXQJ"><code>1FrhgVqWF7aSM9945BRsrEqQZFEM3kZXQJ</code></a></li>
+<li><a href="https://mempool.space/address/17VUfVjYJiaLkmCvwaGFBcBQ3riJMnk1hc"><code>17VUfVjYJiaLkmCvwaGFBcBQ3riJMnk1hc</code></a></li>
+<li><a href="https://mempool.space/address/1PH3WNHvdU9yprpHgymWigJzEsF2L6sX7L"><code>1PH3WNHvdU9yprpHgymWigJzEsF2L6sX7L</code></a></li>
+<li><a href="https://mempool.space/address/1Jt7P4Ct1tJsfZshQjubda1qkPF5tNWeEr"><code>1Jt7P4Ct1tJsfZshQjubda1qkPF5tNWeEr</code></a></li>
+<li><a href="https://mempool.space/address/1QSXSyudincb7ioV53zzAfdpAxTUMwtKR"><code>1QSXSyudincb7ioV53zzAfdpAxTUMwtKR</code></a></li>
+<li><a href="https://mempool.space/address/1MGREYM262PJsYryLnBYsXuzgpdn8hasBV"><code>1MGREYM262PJsYryLnBYsXuzgpdn8hasBV</code></a></li>
+<li><a href="https://mempool.space/address/1JhEZFSb4URMgPcQtqtfsLpJrxv6AZKjVX"><code>1JhEZFSb4URMgPcQtqtfsLpJrxv6AZKjVX</code></a></li>
+<li><a href="https://mempool.space/address/1Ch9iYY7VD39sLXHud6tWJr37G9s4GYcub"><code>1Ch9iYY7VD39sLXHud6tWJr37G9s4GYcub</code></a></li>
+<li><a href="https://mempool.space/address/13N4aVWdPLcwg5g1kbLav3gfqZvh94vcfW"><code>13N4aVWdPLcwg5g1kbLav3gfqZvh94vcfW</code></a></li>
+<li><a href="https://mempool.space/address/1DwgGvPJp4znPQ7nWYJ4VibwmtVU2aVnCg"><code>1DwgGvPJp4znPQ7nWYJ4VibwmtVU2aVnCg</code></a></li>
+<li><a href="https://mempool.space/address/1M7ePCREnnLQ5PxN3m1JpHQ4rkBqhUtWb5"><code>1M7ePCREnnLQ5PxN3m1JpHQ4rkBqhUtWb5</code></a></li>
+<li><a href="https://mempool.space/address/1DqSs5biPYXTNHQGcnq7wz2q4aFpLUKUvo"><code>1DqSs5biPYXTNHQGcnq7wz2q4aFpLUKUvo</code></a></li>
+<li><a href="https://mempool.space/address/18Ruktk8pJzKyjqdY6FxAEsXvspG9nyyXS"><code>18Ruktk8pJzKyjqdY6FxAEsXvspG9nyyXS</code></a></li>
+<li><a href="https://mempool.space/address/1FFfiZZc2GFnumNdQuwgvdHUDVDnWFXu53"><code>1FFfiZZc2GFnumNdQuwgvdHUDVDnWFXu53</code></a></li>
+<li><a href="https://mempool.space/address/17FCXKzeGswkNG3LyU9eRGx7dcZoXPiYm3"><code>17FCXKzeGswkNG3LyU9eRGx7dcZoXPiYm3</code></a></li>
+<li><a href="https://mempool.space/address/1FBZwVAU73c6gzAxrmb2WhojUaUutcQpxc"><code>1FBZwVAU73c6gzAxrmb2WhojUaUutcQpxc</code></a></li>
+<li><a href="https://mempool.space/address/1LYk7YCnSsVDKV6GdN9qUjNoFzQ5CU8EfP"><code>1LYk7YCnSsVDKV6GdN9qUjNoFzQ5CU8EfP</code></a></li>
+<li><a href="https://mempool.space/address/1LjKhEw6yRDX4Szk4ahDXq4RMnGPSUBXPA"><code>1LjKhEw6yRDX4Szk4ahDXq4RMnGPSUBXPA</code></a></li>
+<li><a href="https://mempool.space/address/1QHhEm7EycvmeGY6qp1M4canXMh7XP4oHv"><code>1QHhEm7EycvmeGY6qp1M4canXMh7XP4oHv</code></a></li>
+<li><a href="https://mempool.space/address/14RkYZw1d2W3AyfqQge83GmWAaynhPUDtN"><code>14RkYZw1d2W3AyfqQge83GmWAaynhPUDtN</code></a></li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-theory-guides"><a class="header" href="#ordinal-theory-guides">Ordinal Theory Guides</a></h1>
+<p>See the the table of contents for a list of guides, including a guide to the
+explorer, a guide for sat hunters, and a guide to inscriptions.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-explorer"><a class="header" href="#ordinal-explorer">Ordinal Explorer</a></h1>
 <p>The <code>ord</code> binary includes a block explorer. We host a instance of the block
 explorer on mainnet at <a href="https://ordinals.com">ordinals.com</a>, and on signet at
-<a href="htps://signet.ordinals.com">signet.ordinals.com</a>.</p>
+<a href="https://signet.ordinals.com">signet.ordinals.com</a>.</p>
 <h2 id="search"><a class="header" href="#search">Search</a></h2>
 <p>The search box accepts a variety of object representations.</p>
 <h3 id="blocks"><a class="header" href="#blocks">Blocks</a></h3>
@@ -382,8 +877,8 @@ transaction:</p>
 <p>Transaction outputs can searched by outpoint, for example, the only output of
 the genesis block coinbase transaction:</p>
 <p><a href="https://ordinals.com/search/4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b:0">4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b:0</a></p>
-<h3 id="ordinal"><a class="header" href="#ordinal">Ordinal</a></h3>
-<p>Ordinals can be searched by integer, their position within the entire bitcoin
+<h3 id="sats"><a class="header" href="#sats">Sats</a></h3>
+<p>Sats can be searched by integer, their position within the entire bitcoin
 supply:</p>
 <p><a href="https://ordinals.com/search/2099994106992659">2099994106992659</a></p>
 <p>By decimal, their block and offset within that block:</p>
@@ -396,10 +891,158 @@ difficulty adjustment, and offset within their block:</p>
 <p>Or by percentile, the percentage of bitcoin's supply that has been or will have
 been issued when they are mined:</p>
 <p><a href="https://ordinals.com/search/100%">100%</a></p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-hunting"><a class="header" href="#ordinal-hunting">Ordinal Hunting</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-inscription-guide"><a class="header" href="#ordinal-inscription-guide">Ordinal Inscription Guide</a></h1>
+<p>Individual sats can be inscribed with arbitrary content, creating
+Bitcoin-native digital artifacts that can be held in a Bitcoin wallet and
+transferred using Bitcoin transactions. Inscriptions are as durable, immutable,
+secure, and decentralized as Bitcoin itself.</p>
+<p>Working with inscriptions requires a Bitcoin full node, to give you a view of
+the current state of the Bitcoin blockchain, and a wallet that can create
+inscriptions and perform sat control when constructing transactions to send
+inscriptions to another wallet.</p>
+<p>Bitcoin Core provides both a Bitcoin full node and wallet. However, the Bitcoin
+Core wallet cannot create inscriptions and does not perform sat control.</p>
+<p>This requires <a href="https://github.com/casey/ord"><code>ord</code></a>, the ordinal utility. <code>ord</code>
+doesn't implement its own wallet, so <code>ord wallet</code> subcommands interact with
+Bitcoin Core wallets.</p>
+<p>This guide covers:</p>
+<ol>
+<li>Installing Bitcoin Core</li>
+<li>Syncing the Bitcoin blockchain</li>
+<li>Creating a Bitcoin Core wallet</li>
+<li>Using <code>ord wallet receive</code> to receive sats</li>
+<li>Creating inscriptions with <code>ord wallet inscribe</code></li>
+<li>Sending inscriptions with <code>ord wallet send</code></li>
+<li>Receiving inscriptions with <code>ord wallet receive</code></li>
+</ol>
+<h2 id="getting-help"><a class="header" href="#getting-help">Getting Help</a></h2>
+<p>If you get stuck, try asking for help on the <a href="https://discord.com/invite/87cjuz4FYg">Ordinals Discord
+Server</a>, or checking GitHub for relevant
+<a href="https://github.com/casey/ord/issues">issues</a> and
+<a href="https://github.com/casey/ord/discussions">discussions</a>.</p>
+<h2 id="installing-bitcoin-core"><a class="header" href="#installing-bitcoin-core">Installing Bitcoin Core</a></h2>
+<p>Bitcoin Core is available from <a href="https://bitcoincore.org/">bitcoincore.org</a> on
+the <a href="https://bitcoincore.org/en/download/">download page</a>.</p>
+<p>Making inscriptions requires Bitcoin Core 24 or newer.</p>
+<p>This guide does not cover installing Bitcoin Core in detail. Once Bitcoin Core
+is installed, you should be able to run <code>bitcoind -version</code> successfully from
+the command line.</p>
+<h2 id="configuring-bitcoin-core"><a class="header" href="#configuring-bitcoin-core">Configuring Bitcoin Core</a></h2>
+<p><code>ord</code> requires Bitcoin Core's transaction index.</p>
+<p>To configure your Bitcoin Core node to maintain a transaction
+index, add the following to your <code>bitcoin.conf</code>:</p>
+<pre><code>txindex=1
+</code></pre>
+<p>Or, run <code>bitcoind</code> with <code>-txindex</code>:</p>
+<pre><code>bitcoind -txindex
+</code></pre>
+<h2 id="syncing-the-bitcoin-blockchain"><a class="header" href="#syncing-the-bitcoin-blockchain">Syncing the Bitcoin Blockchain</a></h2>
+<p>To sync the chain, run:</p>
+<pre><code>bitcoind -txindex
+</code></pre>
+<p>…and leave it running until <code>getblockcount</code>:</p>
+<pre><code>bitcoin-cli getblockcount
+</code></pre>
+<p>agrees with the block count on a block explorer like <a href="https://mempool.space/">the mempool.space block
+explorer</a>. <code>ord</code> interacts with <code>bitcoind</code>, so you
+should leave <code>bitcoind</code> running in the background when you're using <code>ord</code>.</p>
+<h2 id="installing-ord"><a class="header" href="#installing-ord">Installing <code>ord</code></a></h2>
+<p>The <code>ord</code> utility is written in Rust and can be built from
+<a href="https://github.com/casey/ord">source</a>. Pre-built binaries are available on the
+<a href="https://github.com/casey/ord/releases">releases page</a>.</p>
+<p>You can install the latest pre-built binary from the command line with:</p>
+<pre><code class="language-sh">curl --proto '=https' --tlsv1.2 -fsLS https://ordinals.com/install.sh | bash -s
+</code></pre>
+<p>Once <code>ord</code> is installed, you should be able to run:</p>
+<pre><code>ord --version
+</code></pre>
+<p>Which prints out <code>ord</code>'s version number.</p>
+<h2 id="creating-a-bitcoin-core-wallet"><a class="header" href="#creating-a-bitcoin-core-wallet">Creating a Bitcoin Core Wallet</a></h2>
+<p><code>ord</code> uses Bitcoin Core to manage private keys, sign transactions, and
+broadcast transactions to the Bitcoin network.</p>
+<p>To create a Bitcoin Core wallet named <code>ord</code> for use with <code>ord</code>, run:</p>
+<pre><code>ord wallet create
+</code></pre>
+<h2 id="receiving-sats"><a class="header" href="#receiving-sats">Receiving Sats</a></h2>
+<p>Inscriptions are made on individual sats, using normal Bitcoin transactions
+that pay fees in sats, so your wallet will need some sats.</p>
+<p>Get a new address from your <code>ord</code> wallet by running:</p>
+<pre><code>ord wallet receive
+</code></pre>
+<p>And send it some funds.</p>
+<p>You can see pending transactions with:</p>
+<pre><code>ord wallet transactions
+</code></pre>
+<p>Once the transaction confirms, you should be able to see the transactions
+outputs with <code>ord wallet outputs</code>.</p>
+<h2 id="creating-inscription-content"><a class="header" href="#creating-inscription-content">Creating Inscription Content</a></h2>
+<p>Sats can be inscribed with any kind of content, but the <code>ord</code> wallet only
+supports content types that can be displayed by the <code>ord</code> block explorer.</p>
+<p>Additionally, inscriptions are included in transactions, so the larger the
+content, the higher the fee that the inscription transaction must pay.</p>
+<p>Inscription content is included in transaction witnesses, which receive the
+witness discount. To calculate the approximate fee that in inscribe transaction
+will pay, divide the content size by four and muliply by the fee rate.</p>
+<p>Inscription transactions must be less than 400,000 weight units, or they will
+not be relayed by Bitcoin Core. One byte of inscription content costs one
+weight unit. Since an inscription transaction includes not just the inscription
+content, limit inscription content to less than 400,000 weight units. 390,000
+weight units should be safe.</p>
+<h2 id="creating-inscriptions"><a class="header" href="#creating-inscriptions">Creating Inscriptions</a></h2>
+<p>To create an inscription with the contents of <code>FILE</code>, run:</p>
+<pre><code>ord wallet inscribe FILE
+</code></pre>
+<p>Ord will output two transactions IDs, one for the commit transaction, and one
+for the reveal transaction, and the inscription ID. Inscription IDs are of the
+form <code>TXIDiN</code>, where <code>TXID</code> is the transaction ID of the reveal transaction,
+and <code>N</code> is the index of the inscription in the reveal transaction.</p>
+<p>The commit transaction commits to a tapscript containing the contents of the
+inscription, and the reveal transaction spends from that tapscript, revealing
+the contents on chain and inscribing them on the first sat of the first output
+of the reveal transaction.</p>
+<p>Wait for the reveal transaction to be mined. You can check the status of the
+commit and reveal transactions using  <a href="https://mempool.space/">the mempool.space block
+explorer</a>.</p>
+<p>Once the reveal transaction has been mined, the inscription ID should be
+printed when you run:</p>
+<pre><code>ord wallet inscriptions
+</code></pre>
+<p>And when you visit <a href="https://ordinals.com/">the ordinals explorer</a> at
+<code>ordinals.com/inscription/INSCRIPTION_ID</code>.</p>
+<h2 id="sending-inscriptions"><a class="header" href="#sending-inscriptions">Sending Inscriptions</a></h2>
+<p>Ask the recipient to generate a new address by running:</p>
+<pre><code>ord wallet receive
+</code></pre>
+<p>Send the inscription by running:</p>
+<pre><code>ord wallet send ADDRESS INSCRIPTION_ID
+</code></pre>
+<p>See the pending transaction with:</p>
+<pre><code>ord wallet transactions
+</code></pre>
+<p>Once the send transaction confirms, the recipient can confirm receipt by
+running:</p>
+<pre><code>ord wallet inscriptions
+</code></pre>
+<h2 id="receiving-inscriptions"><a class="header" href="#receiving-inscriptions">Receiving Inscriptions</a></h2>
+<p>Generate a new receive address using:</p>
+<pre><code>ord wallet receive
+</code></pre>
+<p>The sender can transfer the inscription to your address using:</p>
+<pre><code>ord wallet send ADDRESS INSCRIPTION_ID
+</code></pre>
+<p>See the pending transaction with:</p>
+<pre><code>ord wallet transactions
+</code></pre>
+<p>Once the send transaction confirms, you can can confirm receipt by running:</p>
+<pre><code>ord wallet inscriptions
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="sat-hunting"><a class="header" href="#sat-hunting">Sat Hunting</a></h1>
+<p><em>This guide is out of date. Since it was written, the <code>ord</code> binary was changed
+to only build the full satoshi index when the <code>--index-sats</code> flag is supplied.
+Additionally, <code>ord</code> now has a built-in wallet that wraps a Bitcoin Core wallet.
+See <code>ord wallet --help</code>.</em></p>
 <p>Ordinal hunting is difficult but rewarding. The feeling of owning a wallet full
-of UTXOs, redolent with the scent of rare and exotic ordinals, is beyond
-compare.</p>
+of UTXOs, redolent with the scent of rare and exotic sats, is beyond compare.</p>
 <p>Ordinals are numbers for satoshis. Every satoshi has an ordinal number and
 every ordinal number has a satoshi.</p>
 <h2 id="preparation"><a class="header" href="#preparation">Preparation</a></h2>
@@ -451,7 +1094,7 @@ wallet is named <code>foo</code>:</p>
 </li>
 <li>
 <p>Display any rare ordinals wallet <code>foo</code>'s UTXOs:</p>
-<pre><code class="language-sh">ord wallet identify
+<pre><code class="language-sh">ord wallet sats
 </code></pre>
 </li>
 </ol>
@@ -502,7 +1145,7 @@ wallet's UTXOs.</p>
 </li>
 <li>
 <p>Display your wallet's rare ordinals:</p>
-<pre><code class="language-sh">ord wallet identify
+<pre><code class="language-sh">ord wallet sats
 </code></pre>
 </li>
 </ol>
@@ -585,108 +1228,99 @@ search for your wallet's UTXOs.</p>
 </li>
 <li>
 <p>Display your wallet's rare ordinals:</p>
-<pre><code class="language-sh">ord wallet identify
+<pre><code class="language-sh">ord wallet sats
 </code></pre>
 </li>
 </ol>
 <h3 id="exporting-descriptors"><a class="header" href="#exporting-descriptors">Exporting Descriptors</a></h3>
 <h4 id="sparrow-wallet"><a class="header" href="#sparrow-wallet">Sparrow Wallet</a></h4>
-<p>Navigate to the <code>Settings</code> tab, then to <code>Script Policy</code>, and press the edit button to display the descriptor.</p>
+<p>Navigate to the <code>Settings</code> tab, then to <code>Script Policy</code>, and press the edit
+button to display the descriptor.</p>
 <h3 id="transferring-ordinals"><a class="header" href="#transferring-ordinals">Transferring Ordinals</a></h3>
-<p><code>ord</code> does not yet support transferring specific ordinals. Currently, your best
-bet is to use the <code>bitcoin-cli</code> commands <code>createrawtransaction</code>,
-<code>signrawtransactionwithwallet</code>, and <code>sendrawtransaction</code>, however, how to do so
-is complex and outside the scope of this guide.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-faq"><a class="header" href="#ordinal-faq">Ordinal FAQ</a></h1>
-<h2 id="how-many-ordinals-will-there-be"><a class="header" href="#how-many-ordinals-will-there-be">How many ordinals will there be?</a></h2>
-<p>THERE WILL ONLY EVER BE 2,099,999,997,690,000 ORDINALS</p>
-<h2 id="what-are-ordinals"><a class="header" href="#what-are-ordinals">What are ordinals?</a></h2>
-<p>Ordinals are serial numbers for satoshis, like this: 804766073970493. Every
-satoshi, which is ¹⁄₁₀₀₀₀₀₀₀₀ of a bitcoin, has an ordinal, and every ordinal
-has a satoshi. When a satoshi changes hands, so does its ordinal. There are a
-lot of satoshis, and so there are a lot of ordinals. Two quadrillion
-ninety-nine trillion nine hundred ninety-nine billion nine hundred ninety-seven
-million six hundred ninety thousand, to be precise.</p>
-<h2 id="what-are-ordinals-not"><a class="header" href="#what-are-ordinals-not">What are ordinals not?</a></h2>
-<p>Ordinals are not a side chain, a separate token, something that requires any
-changes to Bitcoin, or complicated.</p>
-<h2 id="what-are-ordinals-for"><a class="header" href="#what-are-ordinals-for">What are ordinals for?</a></h2>
-<p>Collecting, trading, and scheming. Ordinals could be used as the basis of
-Bitcoin-native NFTs, using a scheme to assign NFTs to ordinals, and then use
-those ordinals to track ownership of the NFT. But only could, nobody's written
-the code for that yet.</p>
-<h2 id="how-do-ordinals-work"><a class="header" href="#how-do-ordinals-work">How do ordinals work?</a></h2>
-<p>Ordinals are assigned to satoshis in the ordinal in which they are mined. The
-first satoshi in the first block is ordinal 0, the second is ordinal 1, and the
-last satoshi of the firt block is ordinal 4,999,999,999.</p>
-<p>Ordinals live in UTXOs, but transactions destroy spent inputs and create new
-outputs, so we need an algorithm to determine how ordinals hop from the inputs
-to the outputs of a transaction. Fortunately, that algorithm is very simple.</p>
-<p>Ordinals transfer in first-in-first-out order. Think of the inputs to a
-transaction as being a list of ordinals, and the outputs as a list of slots,
-waiting to receive an ordinal. To assign ordinals to slots, go through each
-ordinal in the inputs in order, and assign each to the first available slot in
-the outputs.</p>
-<p>Let's imagine a transaction with three inputs and two outputs. The inputs are
-on the left of the arrow and the outputs are on the right, all labeled with
-their values:</p>
-<pre><code>[2] [1] [3] → [4] [2]
+<p>The <code>ord</code> wallet supports transferring specific satoshis. You can also use
+<code>bitcoin-cli</code> commands <code>createrawtransaction</code>, <code>signrawtransactionwithwallet</code>,
+and <code>sendrawtransaction</code>, how to do so is complex and outside the scope of this
+guide.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="collecting"><a class="header" href="#collecting">Collecting</a></h1>
+<p>Currently, <a href="https://github.com/casey/ord/">ord</a> is the only wallet supporting
+sat-control and sat-selection, which are required to safely store and send rare
+sats and inscriptions, hereafter ordinals.</p>
+<p>The recommended way to send, receive, and store ordinals is with <code>ord</code>, but if
+you are careful, it is possible to safely store, and in some cases send,
+ordinals with other wallets.</p>
+<p>As a general note, receiving ordinals in an unsupported wallet is not
+dangerous. Ordinals can be sent to any bitcoin address, and are safe as long as
+the UTXO that contains them is not spent. However, if that wallet is then used
+to send bitcoin, it may select the UTXO containing the ordinal as an input, and
+send the inscription or spend it to fees.</p>
+<p><a href="https://github.com/windsok">windsok</a> has kindly written a guide to creating an
+<code>ord</code>-compatible wallet with <a href="https://sparrowwallet.com/">Sparrow</a>, available
+on <a href="https://gist.github.com/windsok/5b53a1ced6ef3eddbde260337de28980">GitHub</a>.
+Please note that if you follow this guide, you should not use the wallet you
+create to send BTC, unless you perform manual coin-selection to avoid sending
+ordinals.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="moderation"><a class="header" href="#moderation">Moderation</a></h1>
+<p><code>ord</code> includes a block explorer, which you can run locally with <code>ord server</code>.</p>
+<p>The block explorer allows viewing inscriptions. Inscriptions are user-generated
+content, which may be objectionable or unlawful.</p>
+<p>It is the responsibility of each individual who runs an ordinal block explorer
+instance to understand their responsibilities with respect to unlawful content,
+and decide what moderation policy is appropriate for their instance.</p>
+<p>In order to prevent particular inscriptions from being displayed on an <code>ord</code>
+instance, they can be included in a YAML config file, which is loaded with the
+<code>--config</code> option.</p>
+<p>To hide inscriptions, first create a config file, with the inscription ID you
+want to hide:</p>
+<pre><code class="language-yaml">hidden:
+- 0000000000000000000000000000000000000000000000000000000000000000i0
 </code></pre>
-<p>Now let's label the same transaction with the ordinals that each input
-contains, and question marks for each output ordinal. Ordinals are long
-numbers, so let's use letters to represent them:</p>
-<pre><code>[a b] [c] [d e f] → [? ? ? ?] [? ?]
-</code></pre>
-<p>To figure out which ordinal goes to which output, go through the input ordinals
-in order and assign each to a question mark:</p>
-<pre><code>[a b] [c] [d e f] → [a b c d] [e f]
-</code></pre>
-<p>What about fees, you might ask? Good question! Let's imagine the same
-transaction, this time with a two satoshi fee. Transactions with fees send more
-satoshis in the inputs than are received by the outputs, so to make our
-transaction into one that pays fees, we'll remove the second output:</p>
-<pre><code>[2] [1] [3] → [4]
-</code></pre>
-<p>The ordinals, <var>e</var> and <var>f</var> now have nowhere to go in the outputs:</p>
-<pre><code>[a b] [c] [d e f] → [a b c d]
-</code></pre>
-<p>So they go to the miner who mined the block as fees. <a href="https://github.com/casey/ord/blob/master/bip.mediawiki">The
-BIP</a> has the details,
-but in short, fees paid by transactions are treated as extra inputs to the
-coinbase transaction, and are ordered how their corresponding transactions are
-ordered in the block. The coinbase transaction of the block might look like
-this:</p>
-<pre><code>[SUBSIDY] [e f] → [SUBSIDY e f]
-</code></pre>
-<h2 id="where-can-i-find-the-nitty-gritty-details"><a class="header" href="#where-can-i-find-the-nitty-gritty-details">Where can I find the nitty-gritty details?</a></h2>
-<p><a href="https://github.com/casey/ord/blob/master/bip.mediawiki">The BIP!</a></p>
+<p>The suggested name for <code>ord</code> config files is <code>ord.yaml</code>, but any filename can
+be used.</p>
+<p>Then pass the file to <code>--config</code> when starting the server:</p>
+<p><code>ord --config ord.yaml server</code></p>
+<p>Note that the <code>--config</code> option comes after <code>ord</code> but before the <code>server</code>
+subcommand.</p>
+<p><code>ord</code> must be restarted in to load changes to the config file.</p>
+<h2 id="ordinalscom"><a class="header" href="#ordinalscom"><code>ordinals.com</code></a></h2>
+<p>The <code>ordinals.com</code> instances use <code>systemd</code> to run the <code>ord server</code> service,
+which is called <code>ord</code>, with a config file located at <code>/var/lib/ord/ord.yaml</code>.</p>
+<p>To hide an inscription on <code>ordinals.com</code>:</p>
+<ol>
+<li>SSH into the server</li>
+<li>Add the inscription ID to <code>/var/lib/ord/ord.yaml</code></li>
+<li>Restart the service with <code>systemctl restart ord</code></li>
+<li>Monitor the restart with <code>journalctl -u ord</code></li>
+</ol>
+<p>Currently, <code>ord</code> is slow to restart, so the site will not come back online
+immediately.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-bounty-hunting-hints"><a class="header" href="#ordinal-bounty-hunting-hints">Ordinal Bounty Hunting Hints</a></h1>
 <ul>
 <li>
-<p>There are no ordinal wallets or transaction construction libraries. However,
+<p>The <code>ord</code> wallet can send and receive specific satoshis. Additionally,
 ordinal theory is extremely simple. A clever hacker should be able to write
-code to manipulate ordinals in no time.</p>
+code from scratch to manipulate satoshis using ordinal theory in no time.</p>
 </li>
 <li>
-<p>For more information about ordinals, check out the <a href="./faq.html">FAQ</a> for an
-overview, the <a href="https://github.com/casey/ord/blob/master/bip.mediawiki">BIP</a>
-for the technical details, and the <a href="https://github.com/casey/ord">ord repo</a>
-for the <code>ord</code> wallet and block explorer.</p>
+<p>For more information about ordinal theory, check out the <a href="./faq.html">FAQ</a> for
+an overview, the
+<a href="https://github.com/casey/ord/blob/master/bip.mediawiki">BIP</a> for the
+technical details, and the <a href="https://github.com/casey/ord">ord repo</a> for the
+<code>ord</code> wallet and block explorer.</p>
 </li>
 <li>
 <p>Satoshi was the original developer of ordinal theory. However, he knew that
 others would consider it heretical and dangerous, so he hid his knowledge,
 and it was lost to the sands of time. This potent theory is only now being
-rediscovered. You can help by researching rare ordinals.</p>
+rediscovered. You can help by researching rare satoshis.</p>
 </li>
 </ul>
 <p>Good luck and godspeed!</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-bounty-0"><a class="header" href="#ordinal-bounty-0">Ordinal Bounty 0</a></h1>
 <h2 id="criteria"><a class="header" href="#criteria">Criteria</a></h2>
-<p>Send an ordinal whose number ends with a zero to the submission address:</p>
+<p>Send a sat whose ordinal number ends with a zero to the submission address:</p>
 <p>✅: <a href="https://ordinals.com/ordinal/1857578125803250">1857578125803250</a></p>
 <p>❌: <a href="https://ordinals.com/ordinal/1857578125803251">1857578125803251</a></p>
-<p>The ordinal must be the first ordinal of the output you send.</p>
+<p>The sat must be the first sat of the output you send.</p>
 <h2 id="reward"><a class="header" href="#reward">Reward</a></h2>
 <p>100,000 sats</p>
 <h2 id="submission-address"><a class="header" href="#submission-address">Submission Address</a></h2>
@@ -695,8 +1329,8 @@ rediscovered. You can help by researching rare ordinals.</p>
 <p>Claimed by <a href="https://twitter.com/rodarmor/status/1560793241473400833">@count_null</a>!</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-bounty-1"><a class="header" href="#ordinal-bounty-1">Ordinal Bounty 1</a></h1>
 <h2 id="criteria-1"><a class="header" href="#criteria-1">Criteria</a></h2>
-<p>The transaction that submits a UTXO containing the oldest ordinal, i.e., that
-with the lowest number, amongst all submitted UTXOs will be judged the winner.</p>
+<p>The transaction that submits a UTXO containing the oldest sat, i.e., that with
+the lowest number, amongst all submitted UTXOs will be judged the winner.</p>
 <p>The bounty is open for submissions until block 753984—the first block of
 difficulty adjustment period 374. Submissions included in block 753984 or later
 will not be considered.</p>
@@ -708,9 +1342,9 @@ will not be considered.</p>
 <p>Claimed by <a href="https://twitter.com/rodarmor/status/1569883266508853251">@ordinalsindex</a>!</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="ordinal-bounty-2"><a class="header" href="#ordinal-bounty-2">Ordinal Bounty 2</a></h1>
 <h2 id="criteria-2"><a class="header" href="#criteria-2">Criteria</a></h2>
-<p>Send an <span class=uncommon>uncommon</span> ordinal to the submission address:</p>
-<p>✅: <a href="https://ordinals.com/ordinal/347100000000000">347100000000000</a></p>
-<p>❌: <a href="https://ordinals.com/ordinal/6685000001337">6685000001337</a></p>
+<p>Send an <span class=uncommon>uncommon</span> sat to the submission address:</p>
+<p>✅: <a href="https://ordinals.com/sat/347100000000000">347100000000000</a></p>
+<p>❌: <a href="https://ordinals.com/sat/6685000001337">6685000001337</a></p>
 <p>Confirm that the submission address has not received transactions before submitting your entry. Only the first successful submission will be rewarded.</p>
 <h2 id="reward-2"><a class="header" href="#reward-2">Reward</a></h2>
 <p>300,000 sats</p>
@@ -724,34 +1358,36 @@ will not be considered.</p>
 Ordinal names are a modified base-26 encoding of ordinal numbers. To avoid
 locking short names inside the unspendable genesis block coinbase reward,
 ordinal names get <em>shorter</em> as the ordinal number gets <em>longer</em>. The name of
-ordinal 0, the first ordinal to be mined is <code>nvtdijuwxlp</code> and the name of
-ordinal 2,099,999,997,689,999, the last ordinal to be mined, is <code>a</code>.</p>
-<p>The bounty is open for submissions until block 766080—the first block of
-difficulty adjustment period 380. Submissions included in block 766080 or later
-will not be considered.</p>
+sat 0, the first sat to be mined is <code>nvtdijuwxlp</code> and the name of sat
+2,099,999,997,689,999, the last sat to be mined, is <code>a</code>.</p>
+<p>The bounty is open for submissions until block 840000—the first block after the
+fourth halvening. Submissions included in block 840000 or later will not be
+considered.</p>
 <p>Both parts use <a href="bounty/frequency.tsv">frequency.tsv</a>, a list of words and the number
 of times they occur in the <a href="http://storage.googleapis.com/books/ngrams/books/datasetsv2.html">Google Books Ngram
 dataset</a>.
-filtered to only include the names of ordinals which will have been mined by
-the end of the submission period, that appear at least 5000 times in the
-corpus.</p>
+filtered to only include the names of sats which will have been mined by the
+end of the submission period, that appear at least 5000 times in the corpus.</p>
 <p><code>frequency.tsv</code> is a file of tab-separated values. The first column is the
 word, and the second is the number of times it appears in the corpus. The
-entries are sorted from least-frequently occurring to most-frequently occuring.</p>
+entries are sorted from least-frequently occurring to most-frequently
+occurring.</p>
 <p><code>frequency.tsv</code> was compiled using <a href="https://github.com/casey/onegrams">this
 program</a>.</p>
-<p>To search an ordinal wallet for ordinals with a name in <code>frequency.tsv</code>, use
-the following <a href="https://github.com/casey/ord"><code>ord</code></a> command:</p>
-<pre><code>ord wallet identify --ordinals frequency.tsv
+<p>To search an <code>ord</code> wallet for sats with a name in <code>frequency.tsv</code>, use the
+following <a href="https://github.com/casey/ord"><code>ord</code></a> command:</p>
+<pre><code>ord wallet sats --tsv frequency.tsv
 </code></pre>
+<p>This command requires the sat index, so <code>--index-sats</code> must be passed to ord
+when first creating the index.</p>
 <h3 id="part-0"><a class="header" href="#part-0">Part 0</a></h3>
 <p><em>Rare sats pair best with rare words.</em></p>
-<p>The transaction that submits the UTXO containing the ordinal whose name appears
+<p>The transaction that submits the UTXO containing the sat whose name appears
 with the lowest number of occurrences in <code>frequency.tsv</code> shall be the winner of
 part 0.</p>
 <h3 id="part-1"><a class="header" href="#part-1">Part 1</a></h3>
 <p><em>Popularity is the font of value.</em></p>
-<p>The transaction that submits the UTXO containing the ordinal whose name appears
+<p>The transaction that submits the UTXO containing the sat whose name appears
 with the highest number of occurrences in <code>frequency.tsv</code> shall be the winner
 of part 1.</p>
 <h3 id="tie-breaking"><a class="header" href="#tie-breaking">Tie Breaking</a></h3>
@@ -772,31 +1408,43 @@ earlier submission shall be the winner.</p>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+
+
                         <div style="clear: both"></div>
                     </nav>
                 </div>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
             </nav>
 
         </div>
 
-        <script type="text/javascript">
+
+
+
+        <script>
             window.playground_copyable = true;
         </script>
-        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
-        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
-        <script type="text/javascript">
+
+        <script>
         window.addEventListener('load', function() {
             window.setTimeout(window.print, 100);
         });
         </script>
+
+    </div>
     </body>
 </html>

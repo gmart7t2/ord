@@ -3,9 +3,11 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Bounty 3: 400,000 sats - Ordinal Hunter&#x27;s Manual</title>
+        <title>Bounty 3: 400,000 sats - Ordinal Theory Handbook</title>
+
+
         <!-- Custom HTML head -->
-        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
@@ -16,25 +18,29 @@
         <link rel="stylesheet" href="../css/general.css">
         <link rel="stylesheet" href="../css/chrome.css">
         <link rel="stylesheet" href="../css/print.css" media="print">
+
         <!-- Fonts -->
         <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
         <link rel="stylesheet" href="../fonts/fonts.css">
+
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="../highlight.css">
         <link rel="stylesheet" href="../tomorrow-night.css">
         <link rel="stylesheet" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
+
     </head>
     <body>
+    <div id="body-container">
         <!-- Provide site root to javascript -->
-        <script type="text/javascript">
+        <script>
             var path_to_root = "../";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "coal" : "coal";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
-        <script type="text/javascript">
+        <script>
             try {
                 var theme = localStorage.getItem('mdbook-theme');
                 var sidebar = localStorage.getItem('mdbook-sidebar');
@@ -50,7 +56,7 @@
         </script>
 
         <!-- Set the theme before any content is loaded, prevents flash -->
-        <script type="text/javascript">
+        <script>
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
@@ -62,7 +68,7 @@
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
-        <script type="text/javascript">
+        <script>
             var html = document.querySelector('html');
             var sidebar = 'hidden';
             if (document.body.clientWidth >= 1080) {
@@ -75,7 +81,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="../theory.html"><strong aria-hidden="true">1.</strong> Theory</a></li><li class="chapter-item expanded "><a href="../block-explorer.html"><strong aria-hidden="true">2.</strong> Block Explorer</a></li><li class="chapter-item expanded "><a href="../hunting.html"><strong aria-hidden="true">3.</strong> Hunting</a></li><li class="chapter-item expanded "><a href="../faq.html"><strong aria-hidden="true">4.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="../bounty.html"><strong aria-hidden="true">5.</strong> Bounties</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bounty/0.html"><strong aria-hidden="true">5.1.</strong> Bounty 0: 100,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="../bounty/1.html"><strong aria-hidden="true">5.2.</strong> Bounty 1: 200,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="../bounty/2.html"><strong aria-hidden="true">5.3.</strong> Bounty 2: 300,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="../bounty/3.html" class="active"><strong aria-hidden="true">5.4.</strong> Bounty 3: 400,000 sats</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="../introduction.html">Introduction</a></li><li class="chapter-item expanded "><a href="../overview.html"><strong aria-hidden="true">1.</strong> Overview</a></li><li class="chapter-item expanded "><a href="../digital-artifacts.html"><strong aria-hidden="true">2.</strong> Digital Artifacts</a></li><li class="chapter-item expanded "><a href="../inscriptions.html"><strong aria-hidden="true">3.</strong> Inscriptions</a></li><li class="chapter-item expanded "><a href="../faq.html"><strong aria-hidden="true">4.</strong> FAQ</a></li><li class="chapter-item expanded "><a href="../contributing.html"><strong aria-hidden="true">5.</strong> Contributing</a></li><li class="chapter-item expanded "><a href="../donate.html"><strong aria-hidden="true">6.</strong> Donate</a></li><li class="chapter-item expanded "><a href="../guides.html"><strong aria-hidden="true">7.</strong> Guides</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../guides/explorer.html"><strong aria-hidden="true">7.1.</strong> Explorer</a></li><li class="chapter-item expanded "><a href="../guides/inscriptions.html"><strong aria-hidden="true">7.2.</strong> Inscriptions</a></li><li class="chapter-item expanded "><a href="../guides/sat-hunting.html"><strong aria-hidden="true">7.3.</strong> Sat Hunting</a></li><li class="chapter-item expanded "><a href="../guides/collecting.html"><strong aria-hidden="true">7.4.</strong> Collecting</a></li><li class="chapter-item expanded "><a href="../guides/moderation.html"><strong aria-hidden="true">7.5.</strong> Moderation</a></li></ol></li><li class="chapter-item expanded "><a href="../bounties.html"><strong aria-hidden="true">8.</strong> Bounties</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bounty/0.html"><strong aria-hidden="true">8.1.</strong> Bounty 0: 100,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="../bounty/1.html"><strong aria-hidden="true">8.2.</strong> Bounty 1: 200,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="../bounty/2.html"><strong aria-hidden="true">8.3.</strong> Bounty 2: 300,000 sats Claimed!</a></li><li class="chapter-item expanded "><a href="../bounty/3.html" class="active"><strong aria-hidden="true">8.4.</strong> Bounty 3: 400,000 sats</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -83,7 +89,7 @@
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                <div id="menu-bar-hover-placeholder"></div>
+                                <div id="menu-bar-hover-placeholder"></div>
                 <div id="menu-bar" class="menu-bar sticky bordered">
                     <div class="left-buttons">
                         <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
@@ -95,7 +101,7 @@
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
                             <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
-                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
@@ -104,7 +110,7 @@
                         </button>
                     </div>
 
-                    <h1 class="menu-title">Ordinal Hunter&#x27;s Manual</h1>
+                    <h1 class="menu-title">Ordinal Theory Handbook</h1>
 
                     <div class="right-buttons">
                         <a href="../print.html" title="Print this book" aria-label="Print this book">
@@ -113,6 +119,7 @@
                         <a href="https://github.com/casey/ord" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
+
                     </div>
                 </div>
 
@@ -126,8 +133,9 @@
                         </ul>
                     </div>
                 </div>
+
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
-                <script type="text/javascript">
+                <script>
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
                     document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
                     Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
@@ -143,34 +151,36 @@
 Ordinal names are a modified base-26 encoding of ordinal numbers. To avoid
 locking short names inside the unspendable genesis block coinbase reward,
 ordinal names get <em>shorter</em> as the ordinal number gets <em>longer</em>. The name of
-ordinal 0, the first ordinal to be mined is <code>nvtdijuwxlp</code> and the name of
-ordinal 2,099,999,997,689,999, the last ordinal to be mined, is <code>a</code>.</p>
-<p>The bounty is open for submissions until block 766080—the first block of
-difficulty adjustment period 380. Submissions included in block 766080 or later
-will not be considered.</p>
+sat 0, the first sat to be mined is <code>nvtdijuwxlp</code> and the name of sat
+2,099,999,997,689,999, the last sat to be mined, is <code>a</code>.</p>
+<p>The bounty is open for submissions until block 840000—the first block after the
+fourth halvening. Submissions included in block 840000 or later will not be
+considered.</p>
 <p>Both parts use <a href="frequency.tsv">frequency.tsv</a>, a list of words and the number
 of times they occur in the <a href="http://storage.googleapis.com/books/ngrams/books/datasetsv2.html">Google Books Ngram
 dataset</a>.
-filtered to only include the names of ordinals which will have been mined by
-the end of the submission period, that appear at least 5000 times in the
-corpus.</p>
+filtered to only include the names of sats which will have been mined by the
+end of the submission period, that appear at least 5000 times in the corpus.</p>
 <p><code>frequency.tsv</code> is a file of tab-separated values. The first column is the
 word, and the second is the number of times it appears in the corpus. The
-entries are sorted from least-frequently occurring to most-frequently occuring.</p>
+entries are sorted from least-frequently occurring to most-frequently
+occurring.</p>
 <p><code>frequency.tsv</code> was compiled using <a href="https://github.com/casey/onegrams">this
 program</a>.</p>
-<p>To search an ordinal wallet for ordinals with a name in <code>frequency.tsv</code>, use
-the following <a href="https://github.com/casey/ord"><code>ord</code></a> command:</p>
-<pre><code>ord wallet identify --ordinals frequency.tsv
+<p>To search an <code>ord</code> wallet for sats with a name in <code>frequency.tsv</code>, use the
+following <a href="https://github.com/casey/ord"><code>ord</code></a> command:</p>
+<pre><code>ord wallet sats --tsv frequency.tsv
 </code></pre>
+<p>This command requires the sat index, so <code>--index-sats</code> must be passed to ord
+when first creating the index.</p>
 <h3 id="part-0"><a class="header" href="#part-0">Part 0</a></h3>
 <p><em>Rare sats pair best with rare words.</em></p>
-<p>The transaction that submits the UTXO containing the ordinal whose name appears
+<p>The transaction that submits the UTXO containing the sat whose name appears
 with the lowest number of occurrences in <code>frequency.tsv</code> shall be the winner of
 part 0.</p>
 <h3 id="part-1"><a class="header" href="#part-1">Part 1</a></h3>
 <p><em>Popularity is the font of value.</em></p>
-<p>The transaction that submits the UTXO containing the ordinal whose name appears
+<p>The transaction that submits the UTXO containing the sat whose name appears
 with the highest number of occurrences in <code>frequency.tsv</code> shall be the winner
 of part 1.</p>
 <h3 id="tie-breaking"><a class="header" href="#tie-breaking">Tie Breaking</a></h3>
@@ -194,6 +204,8 @@ earlier submission shall be the winner.</p>
                             <a rel="prev" href="../bounty/2.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
+
+
                         <div style="clear: both"></div>
                     </nav>
                 </div>
@@ -203,20 +215,30 @@ earlier submission shall be the winner.</p>
                     <a rel="prev" href="../bounty/2.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
+
             </nav>
 
         </div>
 
-        <script type="text/javascript">
+
+
+
+        <script>
             window.playground_copyable = true;
         </script>
-        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
-        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
 
         <!-- Custom JS scripts -->
+
+
+    </div>
     </body>
 </html>
