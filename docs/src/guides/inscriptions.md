@@ -27,6 +27,7 @@ This guide covers:
 5. Creating inscriptions with `ord wallet inscribe`
 6. Sending inscriptions with `ord wallet send`
 7. Receiving inscriptions with `ord wallet receive`
+8. Picking a suitable fee rate for transactions
 
 Getting Help
 ------------
@@ -166,7 +167,7 @@ Creating Inscriptions
 To create an inscription with the contents of `FILE`, run:
 
 ```
-ord wallet inscribe FILE
+ord wallet inscribe --fee-rate <FEE_RATE> <FILE>
 ```
 
 Ord will output two transactions IDs, one for the commit transaction, and one
@@ -246,3 +247,37 @@ Once the send transaction confirms, you can can confirm receipt by running:
 ```
 ord wallet inscriptions
 ```
+
+Picking a suitable fee rate for transactions
+---------------------------------------------
+
+Both `ord wallet inscribe` and `ord wallet send` require you to specify a fee
+rate for the Bitcoin transaction created. The fee rate determines the fee paid
+to miners to include your transaction in the blockchain. Bitcoin transactions
+with higher fees are prioritized by miners and are typically processed faster
+than transactions with lower fees. The fee rate is the amount of satoshis (the
+smallest unit of Bitcoin) per byte of transaction data that you are willing to pay.
+
+The appropriate fee rate depends on several factors, including the current
+transaction backlog in the mempool, the size of your transaction, and the
+urgency of the transaction. Here are some steps to help you select an appropriate
+fee rate:
+
+Check the current transaction backlog. You can use online resources like
+[mempool.space](https://mempool.space/) to get an estimate of the current fee
+rate needed for a transaction to be processed in a timely manner. 
+
+Decide how urgent your transaction is: If you need your transaction to be
+processed quickly, you may want to choose a higher fee rate to ensure that
+it is included in the next block. If your transaction can wait, you can choose
+a lower fee rate.
+
+It's important to note that selecting a fee rate that is too low may result
+in your transaction being stuck in the mempool (the list of unconfirmed
+transactions) for a long time. The ord wallet does not yet support fee bumping,
+so it is important to select an appropriate fee rate when you initially submit
+the transaction.
+
+If you want to dive deeper into this topic
+[this guide](https://river.com/learn/how-bitcoin-fees-work/) provides a good
+starting point.
