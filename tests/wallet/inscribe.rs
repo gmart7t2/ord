@@ -105,7 +105,7 @@ fn regtest_has_no_content_size_limit() {
   create_wallet(&rpc_server);
   rpc_server.mine_blocks(1);
 
-  CommandBuilder::new("--chain regtest wallet inscribe degenerate.png")
+  CommandBuilder::new("--chain regtest wallet inscribe --fee-rate 1 degenerate.png")
     .write("degenerate.png", [1; 1025])
     .rpc_server(&rpc_server)
     .stdout_regex(".*")
@@ -135,7 +135,7 @@ fn inscribe_does_not_use_inscribed_sats_as_cardinal_utxos() {
   rpc_server.mine_blocks_with_subsidy(1, 100);
 
   CommandBuilder::new(
-    "wallet inscribe degenerate.png"
+    "wallet inscribe --fee-rate 1 degenerate.png"
   )
   .rpc_server(&rpc_server)
   .write("degenerate.png", [1; 100])
@@ -352,7 +352,7 @@ fn inscribe_with_dry_run_flag_fees_increase() {
       .fees;
 
   let total_fee_normal =
-    CommandBuilder::new("wallet inscribe --fee-rate 1 --dry-run degenerate.png --fee-rate 1.1")
+    CommandBuilder::new("wallet inscribe --dry-run degenerate.png --fee-rate 1.1")
       .write("degenerate.png", [1; 520])
       .rpc_server(&rpc_server)
       .output::<Inscribe>()
