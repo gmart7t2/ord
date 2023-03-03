@@ -739,7 +739,7 @@ impl Index {
     &self,
     n: usize,
     from: Option<u64>,
-  ) -> Result<(Vec<InscriptionId>, Option<u64>, Option<u64>)> {
+  ) -> Result<(Vec<InscriptionId>, u64, Option<u64>, Option<u64>)> {
     let rtx = self.database.begin_read()?;
 
     let inscription_number_to_inscription_id =
@@ -778,7 +778,7 @@ impl Index {
       .map(|(_number, id)| Entry::load(*id.value()))
       .collect();
 
-    Ok((inscriptions, prev, next))
+    Ok((inscriptions, latest, prev, next))
   }
 
   pub(crate) fn get_feed_inscriptions(&self, n: usize) -> Result<Vec<(u64, InscriptionId)>> {
@@ -2117,7 +2117,7 @@ mod tests {
 
       context.mine_blocks(1);
 
-      let (inscriptions, prev, next) = context
+      let (inscriptions, latest, prev, next) = context
         .index
         .get_latest_inscriptions_with_prev_and_next(100, None)
         .unwrap();
@@ -2146,7 +2146,7 @@ mod tests {
 
       ids.reverse();
 
-      let (inscriptions, prev, next) = context
+      let (inscriptions, latest, prev, next) = context
         .index
         .get_latest_inscriptions_with_prev_and_next(100, None)
         .unwrap();
@@ -2154,7 +2154,7 @@ mod tests {
       assert_eq!(prev, Some(2));
       assert_eq!(next, None);
 
-      let (inscriptions, prev, next) = context
+      let (inscriptions, latest, prev, next) = context
         .index
         .get_latest_inscriptions_with_prev_and_next(100, Some(101))
         .unwrap();
@@ -2162,7 +2162,7 @@ mod tests {
       assert_eq!(prev, Some(1));
       assert_eq!(next, Some(102));
 
-      let (inscriptions, prev, next) = context
+      let (inscriptions, latest, prev, next) = context
         .index
         .get_latest_inscriptions_with_prev_and_next(100, Some(0))
         .unwrap();

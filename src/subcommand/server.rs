@@ -89,6 +89,56 @@ impl Display for StaticHtml {
   }
 }
 
+#[derive(Serialize)]
+pub(crate) struct InscriptionJson {
+  inscription_id: InscriptionId,
+  number: u64,
+  genesis_height: u64,
+  genesis_fee: u64,
+  output_value: u64,
+  address: Option<Address>,
+  sat: Option<Sat>,
+  satpoint: SatPoint,
+  content_type: Option<String>,
+  content_length: Option<usize>,
+  timestamp: i64,
+  previous: Option<InscriptionId>,
+  next: Option<InscriptionId>,
+}
+
+impl InscriptionJson {
+  pub(crate) fn new(
+    chain: Chain,
+    genesis_fee: u64,
+    genesis_height: u64,
+    inscription: Inscription,
+    inscription_id: InscriptionId,
+    next: Option<InscriptionId>,
+    number: u64,
+    output: TxOut,
+    previous: Option<InscriptionId>,
+    sat: Option<Sat>,
+    satpoint: SatPoint,
+    timestamp: DateTime<Utc>,
+  ) -> Self {
+    Self {
+      inscription_id,
+      number,
+      genesis_height,
+      genesis_fee,
+      output_value: output.value,
+      address: chain.address_from_script(&output.script_pubkey).ok(),
+      sat,
+      satpoint,
+      content_type: inscription.content_type().map(|s| s.to_string()),
+      content_length: inscription.content_length(),
+      timestamp: timestamp.timestamp(),
+      previous,
+      next,
+    }
+  }
+}
+
 #[derive(Debug, Parser)]
 pub(crate) struct Server {
   #[clap(
@@ -158,6 +208,7 @@ impl Server {
         .route("/inscription/:inscription_id", get(Self::inscription))
         .route("/inscriptions", get(Self::inscriptions))
         .route("/inscriptions/:from", get(Self::inscriptions_from))
+        .route("/inscriptions/:from/:n", get(Self::inscriptions_from_n))
         .route("/install.sh", get(Self::install_script))
         .route("/ordinal/:sat", get(Self::ordinal))
         .route("/output/:output", get(Self::output))
@@ -632,7 +683,7 @@ impl Server {
 
     let chain = page_config.chain;
     match chain {
-      Chain::Mainnet => builder.title("Inscriptions"),
+      Chain::Mainnet => builder.title("Inscriptions".to_string()),
       _ => builder.title(format!("Inscriptions – {chain:?}")),
     };
 
@@ -860,7 +911,21 @@ impl Server {
     let next = index.get_inscription_id_by_inscription_number(entry.number + 1)?;
 
     Ok(if accept_json.0 {
-      axum::Json(serde_json::json!({ "inscription_id": inscription_id })).into_response()
+      axum::Json(InscriptionJson::new(
+        page_config.chain,
+        entry.fee,
+        entry.height,
+        inscription,
+        inscription_id,
+        next,
+        entry.number,
+        output,
+        previous,
+        entry.sat,
+        satpoint,
+        timestamp(entry.timestamp),
+      ))
+      .into_response()
     } else {
       InscriptionHtml {
         chain: page_config.chain,
@@ -884,32 +949,50 @@ impl Server {
   async fn inscriptions(
     Extension(page_config): Extension<Arc<PageConfig>>,
     Extension(index): Extension<Arc<Index>>,
-  ) -> ServerResult<PageHtml<InscriptionsHtml>> {
-    Self::inscriptions_inner(page_config, index, None).await
+    accept_json: AcceptJson,
+  ) -> ServerResult<Response> {
+    Self::inscriptions_inner(page_config, index, None, 100, accept_json).await
   }
 
   async fn inscriptions_from(
     Extension(page_config): Extension<Arc<PageConfig>>,
     Extension(index): Extension<Arc<Index>>,
     Path(from): Path<u64>,
-  ) -> ServerResult<PageHtml<InscriptionsHtml>> {
-    Self::inscriptions_inner(page_config, index, Some(from)).await
+    accept_json: AcceptJson,
+  ) -> ServerResult<Response> {
+    Self::inscriptions_inner(page_config, index, Some(from), 100, accept_json).await
+  }
+
+  async fn inscriptions_from_n(
+    Extension(page_config): Extension<Arc<PageConfig>>,
+    Extension(index): Extension<Arc<Index>>,
+    Path((from, n)): Path<(u64, usize)>,
+    accept_json: AcceptJson,
+  ) -> ServerResult<Response> {
+    Self::inscriptions_inner(page_config, index, Some(from), n, accept_json).await
   }
 
   async fn inscriptions_inner(
     page_config: Arc<PageConfig>,
     index: Arc<Index>,
     from: Option<u64>,
-  ) -> ServerResult<PageHtml<InscriptionsHtml>> {
-    let (inscriptions, prev, next) = index.get_latest_inscriptions_with_prev_and_next(100, from)?;
-    Ok(
+    n: usize,
+    accept_json: AcceptJson,
+  ) -> ServerResult<Response> {
+    let (inscriptions, highest, prev, next) =
+      index.get_latest_inscriptions_with_prev_and_next(n, from)?;
+    Ok(if accept_json.0 {
+      axum::Json(serde_json::json!({"inscriptions": inscriptions, "next": next, "prev": prev, "highest":highest}))
+        .into_response()
+    } else {
       InscriptionsHtml {
         inscriptions,
         next,
         prev,
       }
-      .page(page_config, index.has_sat_index()?),
-    )
+      .page(page_config, index.has_sat_index()?)
+      .into_response()
+    })
   }
 
   async fn redirect_http_to_https(
