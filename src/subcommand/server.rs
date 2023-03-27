@@ -678,6 +678,7 @@ impl Server {
     Ok(
       Response::builder()
         .header(header::CONTENT_TYPE, mime.as_ref())
+        .header(header::CACHE_CONTROL, "max-age=60, must-revalidate")
         .body(body)
         .unwrap(),
     )
@@ -786,10 +787,13 @@ impl Server {
       ),
       Media::Image => Ok(
         (
-          [(
-            header::CONTENT_SECURITY_POLICY,
-            "default-src 'self' 'unsafe-inline'",
-          )],
+          [
+            (
+              header::CONTENT_SECURITY_POLICY,
+              "default-src 'self' 'unsafe-inline'",
+            ),
+            (header::CACHE_CONTROL, "max-age=31536000, immutable"),
+          ],
           PreviewImageHtml { inscription_id },
         )
           .into_response(),
