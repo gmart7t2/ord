@@ -98,6 +98,9 @@ pub(crate) struct InscriptionJson {
   output_value: u64,
   address: Option<Address>,
   sat: Option<Sat>,
+  sat_height: Option<u64>,
+  sat_name: Option<String>,
+  sat_rarity: Option<Rarity>,
   satpoint: SatPoint,
   content_type: Option<String>,
   content_length: Option<usize>,
@@ -118,6 +121,9 @@ impl InscriptionJson {
     output: TxOut,
     previous: Option<InscriptionId>,
     sat: Option<Sat>,
+    sat_height: Option<u64>,
+    sat_name: Option<String>,
+    sat_rarity: Option<Rarity>,
     satpoint: SatPoint,
     timestamp: DateTime<Utc>,
   ) -> Self {
@@ -129,6 +135,9 @@ impl InscriptionJson {
       output_value: output.value,
       address: chain.address_from_script(&output.script_pubkey).ok(),
       sat,
+      sat_height,
+      sat_name,
+      sat_rarity,
       satpoint,
       content_type: inscription.content_type().map(|s| s.to_string()),
       content_length: inscription.content_length(),
@@ -910,6 +919,17 @@ impl Server {
 
     let next = index.get_inscription_id_by_inscription_number(entry.number + 1)?;
 
+    let mut sat_height: Option<u64> = None;
+    let mut sat_blocktime: Option<i64> = None;
+    let mut sat_name: Option<String> = None;
+    let mut sat_rarity: Option<Rarity> = None;
+
+    if let Some(sat_instance) = entry.sat {
+      sat_height = Some(sat_instance.height().n());
+      sat_name = Some(sat_instance.name());
+      sat_rarity = Some(sat_instance.rarity());
+    }
+
     Ok(if accept_json.0 {
       axum::Json(InscriptionJson::new(
         page_config.chain,
@@ -922,6 +942,9 @@ impl Server {
         output,
         previous,
         entry.sat,
+        sat_height,
+        sat_name,
+        sat_rarity,
         satpoint,
         timestamp(entry.timestamp),
       ))
