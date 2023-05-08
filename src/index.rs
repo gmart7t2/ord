@@ -12,6 +12,7 @@ use {
   bitcoincore_rpc::{json::GetBlockHeaderResult, Auth, Client},
   chrono::SubsecRound,
   indicatif::{ProgressBar, ProgressStyle},
+  itertools::Itertools,
   log::log_enabled,
   redb::{Database, ReadableTable, Table, TableDefinition, WriteStrategy, WriteTransaction},
   std::collections::HashMap,
@@ -778,6 +779,32 @@ impl Index {
       .collect();
 
     Ok((inscriptions, latest, prev, next))
+  }
+
+  pub(crate) fn get_inscriptions_from_block(
+    &self,
+    block_height: u64,
+  ) -> Result<Vec<InscriptionId>> {
+    let block_inscriptions = self
+      .database
+      .begin_read()?
+      .open_table(INSCRIPTION_ID_TO_INSCRIPTION_ENTRY)?
+      .iter()?
+      .filter_map(|(key, entry_value)| {
+        let entry = InscriptionEntry::load(entry_value.value());
+        if entry.height == block_height {
+          Some((InscriptionId::load(*key.value()), entry.number))
+        } else {
+          None
+        }
+      })
+      .collect::<Vec<(InscriptionId, u64)>>()
+      .into_iter()
+      .sorted_by_key(|&(_id, number)| number)
+      .map(|(id, _)| id)
+      .collect::<Vec<InscriptionId>>();
+
+    Ok(block_inscriptions)
   }
 
   pub(crate) fn get_feed_inscriptions(&self, n: usize) -> Result<Vec<(u64, InscriptionId)>> {

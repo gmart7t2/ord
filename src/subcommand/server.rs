@@ -90,6 +90,17 @@ impl Display for StaticHtml {
 }
 
 #[derive(Serialize)]
+pub(crate) struct BlockcountJson {
+  block_height: u64,
+}
+
+impl BlockcountJson {
+  pub(crate) fn new(block_height: u64) -> Self {
+    Self { block_height }
+  }
+}
+
+#[derive(Serialize)]
 pub(crate) struct InscriptionJson {
   inscription_id: InscriptionId,
   number: u64,
@@ -216,6 +227,7 @@ impl Server {
         .route("/input/:block/:transaction/:input", get(Self::input))
         .route("/inscription/:inscription_id", get(Self::inscription))
         .route("/inscriptions", get(Self::inscriptions))
+        .route("/inscriptions/block/:n", get(Self::inscriptions_block))
         .route("/inscriptions/:from", get(Self::inscriptions_from))
         .route("/inscriptions/:from/:n", get(Self::inscriptions_from_n))
         .route("/install.sh", get(Self::install_script))
@@ -743,8 +755,20 @@ impl Server {
     )
   }
 
-  async fn block_count(Extension(index): Extension<Arc<Index>>) -> ServerResult<String> {
-    Ok(index.block_count()?.to_string())
+  async fn block_count(
+    Extension(index): Extension<Arc<Index>>,
+    accept_json: AcceptJson,
+  ) -> ServerResult<Response> {
+    Ok(if accept_json.0 {
+      axum::Json(BlockcountJson::new(index.block_count()?)).into_response()
+    } else {
+      let body = body::boxed(body::Full::from(index.block_count()?.to_string()));
+
+      Response::builder()
+        .header(header::CONTENT_TYPE, "text/plain")
+        .body(body)
+        .unwrap()
+    })
   }
 
   async fn input(
@@ -920,7 +944,6 @@ impl Server {
     let next = index.get_inscription_id_by_inscription_number(entry.number + 1)?;
 
     let mut sat_height: Option<u64> = None;
-    let mut sat_blocktime: Option<i64> = None;
     let mut sat_name: Option<String> = None;
     let mut sat_rarity: Option<Rarity> = None;
 
@@ -975,6 +998,26 @@ impl Server {
     accept_json: AcceptJson,
   ) -> ServerResult<Response> {
     Self::inscriptions_inner(page_config, index, None, 100, accept_json).await
+  }
+
+  async fn inscriptions_block(
+    Extension(page_config): Extension<Arc<PageConfig>>,
+    Extension(index): Extension<Arc<Index>>,
+    Path(block_height): Path<u64>,
+    accept_json: AcceptJson,
+  ) -> ServerResult<Response> {
+    let inscriptions = index.get_inscriptions_from_block(block_height)?;
+    Ok(if accept_json.0 {
+      axum::Json(serde_json::json!(inscriptions)).into_response()
+    } else {
+      InscriptionsHtml {
+        inscriptions,
+        prev: None,
+        next: None,
+      }
+      .page(page_config, index.has_sat_index()?)
+      .into_response()
+    })
   }
 
   async fn inscriptions_from(
