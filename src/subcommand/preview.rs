@@ -81,6 +81,7 @@ impl Preview {
             satpoint: None,
             dry_run: false,
             destination_address: address.clone(),
+            cursed: false
           },
         )),
       }

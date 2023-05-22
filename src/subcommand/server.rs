@@ -2006,7 +2006,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("text/plain;charset=utf-8", "hello").to_witness(),
+      witness: inscription("text/plain;charset=utf-8", "hello").to_witness(false),
       ..Default::default()
     });
 
@@ -2027,7 +2027,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("text/plain;charset=utf-8", b"\xc3\x28").to_witness(),
+      witness: inscription("text/plain;charset=utf-8", b"\xc3\x28").to_witness(false),
       ..Default::default()
     });
 
@@ -2051,7 +2051,7 @@ mod tests {
         "text/plain;charset=utf-8",
         "<script>alert('hello');</script>",
       )
-      .to_witness(),
+      .to_witness(false),
       ..Default::default()
     });
 
@@ -2072,7 +2072,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("audio/flac", "hello").to_witness(),
+      witness: inscription("audio/flac", "hello").to_witness(false),
       ..Default::default()
     });
     let inscription_id = InscriptionId::from(txid);
@@ -2114,7 +2114,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("image/png", "hello").to_witness(),
+      witness: inscription("image/png", "hello").to_witness(false),
       ..Default::default()
     });
     let inscription_id = InscriptionId::from(txid);
@@ -2136,7 +2136,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("text/html;charset=utf-8", "hello").to_witness(),
+      witness: inscription("text/html;charset=utf-8", "hello").to_witness(false),
       ..Default::default()
     });
 
@@ -2157,7 +2157,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("text/foo", "hello").to_witness(),
+      witness: inscription("text/foo", "hello").to_witness(false),
       ..Default::default()
     });
 
@@ -2178,7 +2178,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("video/webm", "hello").to_witness(),
+      witness: inscription("video/webm", "hello").to_witness(false),
       ..Default::default()
     });
     let inscription_id = InscriptionId::from(txid);
@@ -2199,7 +2199,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("text/foo", "hello").to_witness(),
+      witness: inscription("text/foo", "hello").to_witness(false),
       ..Default::default()
     });
 
@@ -2219,7 +2219,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("text/foo", "hello").to_witness(),
+      witness: inscription("text/foo", "hello").to_witness(false),
       ..Default::default()
     });
 
@@ -2239,7 +2239,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("text/foo", "hello").to_witness(),
+      witness: inscription("text/foo", "hello").to_witness(false),
       ..Default::default()
     });
 
@@ -2271,7 +2271,7 @@ mod tests {
 
     server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("text/foo", "hello").to_witness(),
+      witness: inscription("text/foo", "hello").to_witness(false),
       ..Default::default()
     });
 
@@ -2291,7 +2291,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: Inscription::new(Some("foo/bar".as_bytes().to_vec()), None).to_witness(),
+      witness: Inscription::new(Some("foo/bar".as_bytes().to_vec()), None).to_witness(false),
       ..Default::default()
     });
 
@@ -2313,7 +2313,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: Inscription::new(Some("image/png".as_bytes().to_vec()), None).to_witness(),
+      witness: Inscription::new(Some("image/png".as_bytes().to_vec()), None).to_witness(false),
       ..Default::default()
     });
 
@@ -2335,7 +2335,7 @@ mod tests {
 
     let txid = server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("text/foo", "hello").to_witness(),
+      witness: inscription("text/foo", "hello").to_witness(false),
       ..Default::default()
     });
 
@@ -2367,7 +2367,7 @@ mod tests {
       server.mine_blocks(1);
       server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
         inputs: &[(i + 1, 0, 0)],
-        witness: inscription("text/foo", "hello").to_witness(),
+        witness: inscription("text/foo", "hello").to_witness(false),
         ..Default::default()
       });
     }
@@ -2389,7 +2389,7 @@ mod tests {
       server.mine_blocks(1);
       server.bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
         inputs: &[(i + 1, 0, 0)],
-        witness: inscription("text/foo", "hello").to_witness(),
+        witness: inscription("text/foo", "hello").to_witness(false),
         ..Default::default()
       });
     }
@@ -2453,7 +2453,7 @@ mod tests {
     bitcoin_rpc_server.mine_blocks(1);
     let txid = bitcoin_rpc_server.broadcast_tx(TransactionTemplate {
       inputs: &[(1, 0, 0)],
-      witness: inscription("text/plain;charset=utf-8", "hello").to_witness(),
+      witness: inscription("text/plain;charset=utf-8", "hello").to_witness(false),
       ..Default::default()
     });
     let inscription = InscriptionId::from(txid);

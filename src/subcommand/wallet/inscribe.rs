@@ -43,6 +43,8 @@ pub(crate) struct Inscribe {
   pub(crate) dry_run: bool,
   #[clap(help = "mint the inscription directly to this address")]
   pub(crate) destination_address: Address,
+  #[clap(long, help = "whether the inscription is cursed")]
+  pub(crate) cursed: bool,
 }
 
 impl Inscribe {
@@ -80,6 +82,7 @@ impl Inscribe {
         commit_tx_change,
         reveal_tx_destination,
         self.fee_rate,
+        self.cursed
       )?;
 
     utxos.insert(
@@ -142,6 +145,7 @@ impl Inscribe {
     change: [Address; 2],
     destination: Address,
     fee_rate: FeeRate,
+    cursed: bool
   ) -> Result<(Transaction, Transaction, TweakedKeyPair)> {
     let satpoint = if let Some(satpoint) = satpoint {
       satpoint
@@ -182,6 +186,7 @@ impl Inscribe {
       script::Builder::new()
         .push_slice(&public_key.serialize())
         .push_opcode(opcodes::all::OP_CHECKSIG),
+        cursed
     );
 
     let taproot_spend_info = TaprootBuilder::new()
@@ -378,6 +383,7 @@ mod tests {
       [commit_address, change(1)],
       reveal_address,
       FeeRate::try_from(1.0).unwrap(),
+      false
     )
     .unwrap();
 
@@ -407,6 +413,7 @@ mod tests {
       [commit_address, change(1)],
       reveal_address,
       FeeRate::try_from(1.0).unwrap(),
+      false
     )
     .unwrap();
 
@@ -440,6 +447,7 @@ mod tests {
       [commit_address, change(1)],
       reveal_address,
       FeeRate::try_from(1.0).unwrap(),
+      false
     )
     .unwrap_err()
     .to_string();
@@ -480,6 +488,7 @@ mod tests {
       [commit_address, change(1)],
       reveal_address,
       FeeRate::try_from(1.0).unwrap(),
+      false
     )
     .is_ok())
   }
@@ -514,6 +523,7 @@ mod tests {
       [commit_address, change(1)],
       reveal_address,
       FeeRate::try_from(fee_rate).unwrap(),
+      false
     )
     .unwrap();
 
@@ -546,6 +556,7 @@ mod tests {
       [commit_address, change(1)],
       reveal_address,
       FeeRate::try_from(1.0).unwrap(),
+      false
     )
     .unwrap_err()
     .to_string();

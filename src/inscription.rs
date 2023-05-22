@@ -15,6 +15,7 @@ const PROTOCOL_ID: &[u8] = b"ord";
 
 const BODY_TAG: &[u8] = &[];
 const CONTENT_TYPE_TAG: &[u8] = &[1];
+const CURSED_TAG: &[u8] = &[66];
 
 #[derive(Debug, PartialEq, Clone)]
 pub(crate) struct Inscription {
@@ -52,7 +53,7 @@ impl Inscription {
     })
   }
 
-  fn append_reveal_script_to_builder(&self, mut builder: script::Builder) -> script::Builder {
+  fn append_reveal_script_to_builder(&self, mut builder: script::Builder, cursed: bool) -> script::Builder {
     builder = builder
       .push_opcode(opcodes::OP_FALSE)
       .push_opcode(opcodes::all::OP_IF)
@@ -62,6 +63,13 @@ impl Inscription {
       builder = builder
         .push_slice(CONTENT_TYPE_TAG)
         .push_slice(content_type);
+    }
+
+    if cursed {
+      log::info!("Appending cursed tag");
+      builder = builder
+        .push_slice(CURSED_TAG)
+        .push_slice("cursed".as_bytes());
     }
 
     if let Some(body) = &self.body {
@@ -74,8 +82,8 @@ impl Inscription {
     builder.push_opcode(opcodes::all::OP_ENDIF)
   }
 
-  pub(crate) fn append_reveal_script(&self, builder: script::Builder) -> Script {
-    self.append_reveal_script_to_builder(builder).into_script()
+  pub(crate) fn append_reveal_script(&self, builder: script::Builder, cursed: bool) -> Script {
+    self.append_reveal_script_to_builder(builder, cursed).into_script()
   }
 
   pub(crate) fn media(&self) -> Media {
@@ -107,10 +115,10 @@ impl Inscription {
   }
 
   #[cfg(test)]
-  pub(crate) fn to_witness(&self) -> Witness {
+  pub(crate) fn to_witness(&self, cursed: bool) -> Witness {
     let builder = script::Builder::new();
 
-    let script = self.append_reveal_script(builder);
+    let script = self.append_reveal_script(builder, cursed);
 
     let mut witness = Witness::new();
 
@@ -591,7 +599,7 @@ mod tests {
           previous_output: OutPoint::null(),
           script_sig: Script::new(),
           sequence: Sequence(0),
-          witness: inscription("foo", [1; 1040]).to_witness(),
+          witness: inscription("foo", [1; 1040]).to_witness(false),
         },
       ],
       output: Vec::new(),
@@ -603,8 +611,8 @@ mod tests {
   #[test]
   fn do_not_extract_from_second_envelope() {
     let mut builder = script::Builder::new();
-    builder = inscription("foo", [1; 100]).append_reveal_script_to_builder(builder);
-    builder = inscription("bar", [1; 100]).append_reveal_script_to_builder(builder);
+    builder = inscription("foo", [1; 100]).append_reveal_script_to_builder(builder, false);
+    builder = inscription("bar", [1; 100]).append_reveal_script_to_builder(builder, false);
 
     let witness = Witness::from_vec(vec![builder.into_script().into_bytes(), Vec::new()]);
 
@@ -638,7 +646,7 @@ mod tests {
   fn reveal_script_chunks_data() {
     assert_eq!(
       inscription("foo", [])
-        .append_reveal_script(script::Builder::new())
+        .append_reveal_script(script::Builder::new(), false)
         .instructions()
         .count(),
       7
@@ -646,7 +654,7 @@ mod tests {
 
     assert_eq!(
       inscription("foo", [0; 1])
-        .append_reveal_script(script::Builder::new())
+        .append_reveal_script(script::Builder::new(), false)
         .instructions()
         .count(),
       8
@@ -654,7 +662,7 @@ mod tests {
 
     assert_eq!(
       inscription("foo", [0; 520])
-        .append_reveal_script(script::Builder::new())
+        .append_reveal_script(script::Builder::new(), false)
         .instructions()
         .count(),
       8
@@ -662,7 +670,7 @@ mod tests {
 
     assert_eq!(
       inscription("foo", [0; 521])
-        .append_reveal_script(script::Builder::new())
+        .append_reveal_script(script::Builder::new(), false)
         .instructions()
         .count(),
       9
@@ -670,7 +678,7 @@ mod tests {
 
     assert_eq!(
       inscription("foo", [0; 1040])
-        .append_reveal_script(script::Builder::new())
+        .append_reveal_script(script::Builder::new(), false)
         .instructions()
         .count(),
       9
@@ -678,7 +686,7 @@ mod tests {
 
     assert_eq!(
       inscription("foo", [0; 1041])
-        .append_reveal_script(script::Builder::new())
+        .append_reveal_script(script::Builder::new(), false)
         .instructions()
         .count(),
       10
@@ -689,7 +697,7 @@ mod tests {
   fn chunked_data_is_parsable() {
     let mut witness = Witness::new();
 
-    witness.push(&inscription("foo", [1; 1040]).append_reveal_script(script::Builder::new()));
+    witness.push(&inscription("foo", [1; 1040]).append_reveal_script(script::Builder::new(), false));
 
     witness.push([]);
 
