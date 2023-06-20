@@ -172,9 +172,12 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
 
         if unbound {
           log::info!(
-            "unbound inscription {} on offset {}",
+            "unbound inscription {} on offset {} ({}, {}, {})",
             inscription_id,
-            offset
+            offset,
+            inscribed_offsets.contains_key(&offset),
+            inscription.tx_in_offset,
+            input_value
           );
         }
 
