@@ -170,6 +170,14 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
           index: id_counter,
         };
 
+        if unbound {
+          log::info!(
+            "unbound inscription {} on offset {}",
+            inscription_id,
+            offset
+          );
+        }
+
         floating_inscriptions.push(Flotsam {
           inscription_id,
           offset,
