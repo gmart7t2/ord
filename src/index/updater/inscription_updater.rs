@@ -179,6 +179,23 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
             inscription.tx_in_offset,
             input_value
           );
+          if let Some(sat_ranges) = input_sat_ranges {
+            let mut total_range_size = 0;
+            for range in sat_ranges {
+              if offset <= total_range_size {
+                log::info!(
+                  "unbound inscription {} on sat {} at offset {} in range ({}, {})",
+                  inscription_id,
+                  range.0 + offset,
+                  offset,
+                  range.0,
+                  range.1
+                );
+                break;
+              }
+              total_range_size += range.1 - range.0;
+            }
+          }
         }
 
         floating_inscriptions.push(Flotsam {
