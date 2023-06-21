@@ -180,20 +180,21 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
             input_value
           );
           if let Some(sat_ranges) = input_sat_ranges {
-            let mut previous_range_size = 0;
+            let mut previous_ranges_size = 0;
             for range in sat_ranges {
               if offset <= previous_range_size + (range.1 - range.0) {
                 log::info!(
-                  "unbound inscription {} on sat {} at offset {} in range ({}, {})",
+                  "unbound inscription {} on sat {} at offset {} in range ({}, {}) ({:?})",
                   inscription_id,
                   range.0 + offset,
                   offset,
                   range.0,
-                  range.1
+                  range.1,
+                  sat_ranges
                 );
                 break;
               }
-              previous_range_size += range.1 - range.0;
+              previous_ranges_size += (range.1 - range.0);
             }
           }
         }
