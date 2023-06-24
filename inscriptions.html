@@ -70,10 +70,12 @@
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
             var html = document.querySelector('html');
-            var sidebar = 'hidden';
+            var sidebar = null;
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
             }
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
@@ -116,7 +118,7 @@
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                        <a href="https://github.com/casey/ord" title="Git repository" aria-label="Git repository">
+                        <a href="https://github.com/ordinals/ord" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
 
@@ -179,22 +181,60 @@ follows:</p>
 <pre><code>OP_FALSE
 OP_IF
   OP_PUSH &quot;ord&quot;
-  OP_1
+  OP_PUSH 1
   OP_PUSH &quot;text/plain;charset=utf-8&quot;
-  OP_0
+  OP_PUSH 0
   OP_PUSH &quot;Hello, world!&quot;
 OP_ENDIF
 </code></pre>
 <p>First the string <code>ord</code> is pushed, to disambiguate inscriptions from other uses
 of envelopes.</p>
-<p><code>OP_1</code> indicates that the next push contains the content type, and <code>OP_0</code>
-indicates that subsequent data pushes contain the content itself. Multiple data
+<p><code>OP_PUSH 1</code> indicates that the next push contains the content type, and <code>OP_PUSH 0</code>indicates that subsequent data pushes contain the content itself. Multiple data
 pushes must be used for large inscriptions, as one of taproot's few
 restrictions is that individual data pushes may not be larger than 520 bytes.</p>
 <p>The inscription content is contained within the input of a reveal transaction,
-and the inscription is made on the first sat of its first output. This sat can
+and the inscription is made on the first sat of its input. This sat can
 then be tracked using the familiar rules of ordinal theory, allowing it to be
 transferred, bought, sold, lost to fees, and recovered.</p>
+<h2 id="content"><a class="header" href="#content">Content</a></h2>
+<p>The data model of inscriptions is that of a HTTP response, allowing inscription
+content to be served by a web server and viewed in a web browser.</p>
+<h2 id="sandboxing"><a class="header" href="#sandboxing">Sandboxing</a></h2>
+<p>HTML and SVG inscriptions are sandboxed in order to prevent references to
+off-chain content, thus keeping inscriptions immutable and self-contained.</p>
+<p>This is accomplished by loading HTML and SVG inscriptions inside <code>iframes</code> with
+the <code>sandbox</code> attribute, as well as serving inscription content with
+<code>Content-Security-Policy</code> headers.</p>
+<h2 id="recursion"><a class="header" href="#recursion">Recursion</a></h2>
+<p>An important exception to sandboxing is recursion: access to <code>ord</code>'s <code>/content</code>
+endpoint is permitted, allowing inscriptions to access the content of other
+inscriptions by requesting <code>/content/&lt;INSCRIPTION_ID&gt;</code>.</p>
+<p>This has a number of interesting use-cases:</p>
+<ul>
+<li>
+<p>Remixing the content of existing inscriptions.</p>
+</li>
+<li>
+<p>Publishing snippets of code, images, audio, or stylesheets as shared public
+resources.</p>
+</li>
+<li>
+<p>Generative art collections where an algorithm is inscribed as JavaScript,
+and instantiated from multiple inscriptions with unique seeds.</p>
+</li>
+<li>
+<p>Generative profile picture collections where accessories and attributes are
+inscribed as individual images, or in a shared texture atlas, and then
+combined, collage-style, in unique combinations in multiple inscriptions.</p>
+</li>
+</ul>
+<p>A couple other endpoints that inscriptions may access are the following:</p>
+<ul>
+<li><code>/blockheight</code>: latest block height.</li>
+<li><code>/blockhash</code>: latest block hash.</li>
+<li><code>/blockhash/&lt;HEIGHT&gt;</code>: block hash at given block height.</li>
+<li><code>/blocktime</code>: UNIX time stamp of latest block.</li>
+</ul>
 
                     </main>
 
