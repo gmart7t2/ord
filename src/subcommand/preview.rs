@@ -97,6 +97,8 @@ impl Preview {
           cursed: false,
           allow_reinscribe: false,
           single_key: false,
+          transfer_address: None,
+          transfer_amount: None,
         },
       )),
     }

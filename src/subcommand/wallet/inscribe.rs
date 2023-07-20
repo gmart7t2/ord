@@ -1,3 +1,5 @@
+use bitcoin::AddressType;
+
 use {
   super::*,
   crate::wallet::Wallet,
@@ -123,6 +125,10 @@ pub(crate) struct Inscribe {
   pub(crate) allow_reinscribe: bool,
   #[clap(long, help = "Use the same recovery key for all inscriptions.")]
   pub(crate) single_key: bool,
+  #[clap(long, help = "Send bitcoin to <TransferAddress>, normal output, not inscription.")]
+  pub(crate) transfer_address: Option<Address>,
+  #[clap(long, help = "Send <TransferAmount> bitcoin to <TransferAddress>.")]
+  pub(crate) transfer_amount: Option<Amount>,
 }
 
 impl Inscribe {
@@ -232,6 +238,20 @@ impl Inscribe {
     tprintln!("[get inscriptions]");
     let inscriptions = index.get_inscriptions(utxos.clone())?;
 
+    tprintln!("[get transfer address]");
+    let commit_tx_transfer_address = self.transfer_address;
+    let commit_tx_transfer_amount = self.transfer_amount;
+    if (commit_tx_transfer_address.is_some() && commit_tx_transfer_amount.is_none())
+      || (commit_tx_transfer_address.is_none() && commit_tx_transfer_amount.is_some())
+    {
+      return Err(anyhow!(
+        "Must provide both --transfer-address and --transfer-amount"
+      ));
+    };
+    if let Some(commit_tx_transfer_address) = commit_tx_transfer_address.as_ref() {
+      assert_eq!(commit_tx_transfer_address.address_type().unwrap(), AddressType::P2tr);
+    }
+
     tprintln!("[get change]");
     let commit_tx_change = [
       get_change_address(&client)?,
@@ -263,6 +283,8 @@ impl Inscribe {
         self.cursed,
         self.allow_reinscribe,
         self.single_key,
+        commit_tx_transfer_address,
+        commit_tx_transfer_amount,
       )?;
 
     tprintln!("[sign commit]");
@@ -510,6 +532,8 @@ impl Inscribe {
     cursed: bool,
     allow_reinscribe: bool,
     single_key: bool,
+    transfer_address: Option<Address>,
+    transfer_amount: Option<Amount>,
   ) -> Result<(SatPoint, Transaction, Vec<Transaction>, Vec<TweakedKeyPair>)> {
     let satpoint = if let Some(satpoint) = satpoint {
       satpoint
@@ -600,6 +624,16 @@ impl Inscribe {
       reveal_fees.push(reveal_fee + postage);
     }
 
+    let mut output_value = reveal_fees.clone();
+    //add transfer_amount to output_value if transfer_address is some
+    if let Some(transfer_address) = transfer_address {
+      if let Some(transfer_amount) = transfer_amount {
+        //NOTE transfer_address 只支持taproot address，否则和 fund reveal 的 output不一样，会有问题
+        output_value.push(transfer_amount);//和reveal tx output一样处理，但是没有最终的reveal tx
+        commit_tx_addresses.push(transfer_address);
+      }
+    }
+
     tprintln!("[make commit]");
     let unsigned_commit_tx = TransactionBuilder::build_transaction_with_values(
       satpoint,
@@ -609,7 +643,7 @@ impl Inscribe {
       alignment,
       change,
       commit_fee_rate,
-      reveal_fees,
+      output_value,
       max_inputs,
     )?;
 
@@ -822,6 +856,8 @@ mod tests {
         false,
         false,
         false,
+        None,
+        None,
       )
       .unwrap();
 
@@ -859,6 +895,8 @@ mod tests {
       false,
       false,
       false,
+      None,
+      None,
     )
     .unwrap();
 
@@ -900,6 +938,8 @@ mod tests {
       false,
       false,
       false,
+      None,
+      None,
     )
     .unwrap_err()
     .to_string();
@@ -948,6 +988,8 @@ mod tests {
       false,
       false,
       false,
+      None,
+      None,
     )
     .is_ok())
   }
@@ -991,6 +1033,8 @@ mod tests {
         false,
         false,
         false,
+        None,
+        None,
       )
       .unwrap();
 
@@ -1060,6 +1104,8 @@ mod tests {
         false,
         false,
         false,
+        None,
+        None,
       )
       .unwrap();
 
@@ -1115,6 +1161,8 @@ mod tests {
       false,
       false,
       false,
+      None,
+      None,
     )
     .unwrap_err()
     .to_string();
@@ -1153,6 +1201,8 @@ mod tests {
         false,
         false,
         false,
+        None,
+        None,
       )
       .unwrap();
 
