@@ -48,6 +48,12 @@ pub struct ServerConfig {
   pub is_json_api_enabled: bool,
 }
 
+#[derive(Serialize)]
+pub struct Ranges {
+  pub output: OutPoint,
+  pub ranges: Vec<(u64, u64)>,
+}
+
 enum BlockQuery {
   Height(u64),
   Hash(BlockHash),
@@ -603,6 +609,8 @@ impl Server {
     }
 
     let mut result = Vec::new();
+    let mut range_count = 0;
+    let mut outpoint_count = 0;
     let start_time = Instant::now();
 
     for outpoint in data.as_array().unwrap() {
@@ -618,7 +626,11 @@ impl Server {
         Ok(outpoint) => {
           sleep(Duration::from_millis(0)).await;
           match index.ranges(outpoint) {
-            Ok(ranges) => result.extend(ranges),
+            Ok(ranges) => {
+              range_count += ranges.len();
+              outpoint_count += 1;
+              result.push(Ranges {output: outpoint, ranges});
+            }
             _ => println!("no ranges for {}", outpoint),
           }
         }
@@ -626,7 +638,7 @@ impl Server {
       }
     }
 
-    println!("  {} ranges from {} outputs in {:?}", result.len(), data.as_array().unwrap().len(), start_time.elapsed());
+    println!("  {} ranges from {} outputs in {:?}", range_count, outpoint_count, start_time.elapsed());
 
     Ok(Json(result).into_response())
   }
