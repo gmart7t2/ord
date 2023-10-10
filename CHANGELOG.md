@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[0.9.0-gm3](https://github.com/ordinals/ord/releases/tag/0.9.0-gm3) - 2023-10-10
+--------------------------------------------------------------------------------
+
+### Changed
+
+- Modify the /ranges endpoint to group the ranges by output.
+
 [0.9.0-gm2](https://github.com/ordinals/ord/releases/tag/0.9.0-gm2) - 2023-10-10
 --------------------------------------------------------------------------------
 
