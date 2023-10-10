@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[0.9.0-gm1](https://github.com/ordinals/ord/releases/tag/0.9.0-gm1) - 2023-10-10
+--------------------------------------------------------------------------------
+
+### Added
+
+- Add `--ignore-descriptors` flag to allow ord to work with non-ord wallets.
+
 [0.9.0-gms4](https://github.com/ordinals/ord/releases/tag/0.9.0-gms4) - 2023-09-18
 ----------------------------------------------------------------------------------
 
