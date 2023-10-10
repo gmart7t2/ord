@@ -56,6 +56,8 @@ pub(crate) struct Options {
   pub(crate) testnet: bool,
   #[arg(long, default_value = "ord", help = "Use wallet named <WALLET>.")]
   pub(crate) wallet: String,
+  #[arg(long, short, help = "Don't check for standard wallet descriptors.")]
+  pub(crate) ignore_descriptors: bool,
   #[arg(long, short, help = "Enable JSON API.")]
   pub(crate) enable_json_api: bool,
 }
@@ -253,20 +255,22 @@ impl Options {
         client.load_wallet(&self.wallet)?;
       }
 
-      let descriptors = client.list_descriptors(None)?.descriptors;
+      if !self.ignore_descriptors {
+        let descriptors = client.list_descriptors(None)?.descriptors;
 
-      let tr = descriptors
-        .iter()
-        .filter(|descriptor| descriptor.desc.starts_with("tr("))
-        .count();
+        let tr = descriptors
+          .iter()
+          .filter(|descriptor| descriptor.desc.starts_with("tr("))
+          .count();
 
-      let rawtr = descriptors
-        .iter()
-        .filter(|descriptor| descriptor.desc.starts_with("rawtr("))
-        .count();
+        let rawtr = descriptors
+          .iter()
+          .filter(|descriptor| descriptor.desc.starts_with("rawtr("))
+          .count();
 
-      if tr != 2 || descriptors.len() != 2 + rawtr {
-        bail!("wallet \"{}\" contains unexpected output descriptors, and does not appear to be an `ord` wallet, create a new wallet with `ord wallet create`", self.wallet);
+        if tr != 2 || descriptors.len() != 2 + rawtr {
+          bail!("wallet \"{}\" contains unexpected output descriptors, and does not appear to be an `ord` wallet, create a new wallet with `ord wallet create`", self.wallet);
+        }
       }
     }
 
