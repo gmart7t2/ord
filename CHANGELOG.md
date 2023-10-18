@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[0.9.0-gm4](https://github.com/ordinals/ord/releases/tag/0.9.0-gm4) - 2023-10-18
+--------------------------------------------------------------------------------
+
+### Added
+
+- Add `/transfers/<height>/<start>` and `/transfers/<height>/<start>/<end>` endpoints to allow pagination.
+
 [0.9.0-gm3](https://github.com/ordinals/ord/releases/tag/0.9.0-gm3) - 2023-10-10
 --------------------------------------------------------------------------------
 
