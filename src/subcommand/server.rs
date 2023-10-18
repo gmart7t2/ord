@@ -259,6 +259,8 @@ impl Server {
         .route("/stats", get(Self::stats))
         .route("/status", get(Self::status))
         .route("/transfers/:height", get(Self::inscriptionids_from_height))
+        .route("/transfers/:height/:start", get(Self::inscriptionids_from_height_start))
+        .route("/transfers/:height/:start/:end", get(Self::inscriptionids_from_height_start_end))
         .route("/tx/:txid", get(Self::transaction))
         .layer(Extension(index))
         .layer(Extension(page_config))
@@ -723,9 +725,60 @@ impl Server {
     Path(height): Path<u64>,
   ) -> ServerResult<String> {
     log::info!("GET /transfers/{height}");
+    Self::inscriptionids_from_height_inner(page_config, index.clone(), index.get_inscription_ids_by_height(height)?).await
+  }
+
+  async fn inscriptionids_from_height_start(
+    Extension(page_config): Extension<Arc<PageConfig>>,
+    Extension(index): Extension<Arc<Index>>,
+    Path(path): Path<(u64, usize)>,
+  ) -> ServerResult<String> {
+    let height = path.0;
+    let start = path.1;
+    log::info!("GET /transfers/{height}/{start}");
+
+    let inscription_ids = index.get_inscription_ids_by_height(height)?;
+    let end = inscription_ids.len();
+
+    match start.cmp(&end) {
+      Ordering::Equal => Err(ServerError::BadRequest("range length == 0".to_string())),
+      Ordering::Greater => Err(ServerError::BadRequest("range length < 0".to_string())),
+      Ordering::Less => {
+        Self::inscriptionids_from_height_inner(page_config, index.clone(), inscription_ids[start..end].to_vec()).await
+      }
+    }
+  }
+
+  async fn inscriptionids_from_height_start_end(
+    Extension(page_config): Extension<Arc<PageConfig>>,
+    Extension(index): Extension<Arc<Index>>,
+    Path(path): Path<(u64, usize, usize)>,
+  ) -> ServerResult<String> {
+    let height = path.0;
+    let start = path.1;
+    let mut end = path.2;
+    log::info!("GET /transfers/{height}/{start}/{end}");
+
+    let inscription_ids = index.get_inscription_ids_by_height(height)?;
+    end = usize::min(end, inscription_ids.len());
+
+    match start.cmp(&end) {
+      Ordering::Equal => Err(ServerError::BadRequest("range length == 0".to_string())),
+      Ordering::Greater => Err(ServerError::BadRequest("range length < 0".to_string())),
+      Ordering::Less => {
+        Self::inscriptionids_from_height_inner(page_config, index.clone(), inscription_ids[start..end].to_vec()).await
+      }
+    }
+  }
+
+  async fn inscriptionids_from_height_inner(
+    page_config: Arc<PageConfig>,
+    index: Arc<Index>,
+    inscription_ids: Vec<InscriptionId>,
+  ) -> ServerResult<String> {
     let mut ret = String::from("");
     let mut tx_cache = HashMap::new();
-    for inscription_id in index.get_inscription_ids_by_height(height)? {
+    for inscription_id in inscription_ids {
       sleep(Duration::from_millis(0)).await;
       let satpoint = index
         .get_inscription_satpoint_by_id(inscription_id)?
