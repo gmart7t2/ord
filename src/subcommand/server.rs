@@ -49,6 +49,12 @@ pub struct ServerConfig {
 }
 
 #[derive(Serialize)]
+pub struct Outputs {
+  pub output: OutPoint,
+  pub details: OutputJson,
+}
+
+#[derive(Serialize)]
 pub struct Ranges {
   pub output: OutPoint,
   pub ranges: Vec<(u64, u64)>,
@@ -248,6 +254,7 @@ impl Server {
         .route("/install.sh", get(Self::install_script))
         .route("/ordinal/:sat", get(Self::ordinal))
         .route("/output/:output", get(Self::output))
+        .route("/outputs", post(Self::outputs))
         .route("/preview/:inscription_id", get(Self::preview))
         .route("/range/:start/:end", get(Self::range))
         .route("/ranges", post(Self::ranges))
@@ -576,6 +583,78 @@ impl Server {
       .page(page_config, index.has_sat_index()?)
       .into_response()
     })
+  }
+
+  async fn outputs(
+    Extension(page_config): Extension<Arc<PageConfig>>,
+    Extension(index): Extension<Arc<Index>>,
+    Json(data): Json<serde_json::Value>
+  ) -> ServerResult<Response> {
+    log::info!("POST /outputs");
+
+    if !data.is_array() {
+      return Err(ServerError::BadRequest("expected array".to_string()));
+    }
+
+    let mut result = Vec::new();
+
+    for outpoint in data.as_array().unwrap() {
+      if !outpoint.is_string() {
+        return Err(ServerError::BadRequest("expected array of strings".to_string()));
+      }
+
+      match OutPoint::from_str(outpoint.as_str().unwrap()) {
+        Ok(outpoint) => {
+          sleep(Duration::from_millis(0)).await;
+
+          let list = if index.has_sat_index()? {
+            index.list(outpoint)?
+          } else {
+            None
+          };
+
+          let output = if outpoint == OutPoint::null() || outpoint == unbound_outpoint() {
+            let mut value = 0;
+
+            if let Some(List::Unspent(ranges)) = &list {
+              for (start, end) in ranges {
+                value += end - start;
+              }
+            }
+
+            TxOut {
+              value,
+              script_pubkey: ScriptBuf::new(),
+            }
+          } else {
+            index
+              .get_transaction(outpoint.txid)?
+              .ok_or_not_found(|| format!("output {outpoint}"))?
+              .output
+              .into_iter()
+              .nth(outpoint.vout as usize)
+              .ok_or_not_found(|| format!("output {outpoint}"))?
+          };
+
+          let inscriptions = index.get_inscriptions_on_output(outpoint)?;
+
+          result.push(
+            Outputs {output: outpoint, details: 
+            OutputJson::new(
+              outpoint,
+              list,
+              page_config.chain,
+              output,
+              inscriptions,
+            )
+            }
+          )
+        }
+        _ => return Err(ServerError::BadRequest(format!("expected array of OutPoint strings ({} is bad)", outpoint))),
+      }
+    }
+
+    Ok(Json(result).into_response())
   }
 
   async fn range(
