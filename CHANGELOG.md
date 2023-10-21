@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[0.9.0-gm5](https://github.com/ordinals/ord/releases/tag/0.9.0-gm5) - 2023-10-21
+--------------------------------------------------------------------------------
+
+### Added
+
+- Add `/outputs` endpoint to fetch details for multiple outputs per request.
+
 [0.9.0-gm4](https://github.com/ordinals/ord/releases/tag/0.9.0-gm4) - 2023-10-18
 --------------------------------------------------------------------------------
 
