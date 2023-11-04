@@ -1,6 +1,12 @@
 Changelog
 =========
 
+[0.10.0-gm2](https://github.com/gmart7t2/ord/releases/tag/0.10.0-gm2) - 2023-11-03
+----------------------------------------------------------------------------------
+
+### Added
+- Add `--address-type` flag to `wallet create` and `wallet restore`.
+
 [0.10.0-gm1](https://github.com/gmart7t2/ord/releases/tag/0.10.0-gm1) - 2023-10-25
 ----------------------------------------------------------------------------------
 
