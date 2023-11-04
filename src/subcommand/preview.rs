@@ -63,6 +63,7 @@ impl Preview {
 
     super::wallet::Wallet::Create(super::wallet::create::Create {
       passphrase: "".into(),
+      address_type: super::wallet::AddressType::Bech32m,
     })
     .run(options.clone())?;
 
