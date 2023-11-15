@@ -3,11 +3,14 @@ use super::*;
 pub(super) struct Batch {
   pub(super) commit_fee_rate: FeeRate,
   pub(super) commit_only: bool,
+  pub(super) commitment: Option<OutPoint>,
+  pub(super) commitment_output: Option<GetRawTransactionResultVout>,
   pub(super) destinations: Vec<Address>,
   pub(super) dry_run: bool,
   pub(super) inscriptions: Vec<Inscription>,
   pub(super) key: Option<String>,
   pub(super) mode: Mode,
+  pub(super) next_inscription: Option<Inscription>,
   pub(super) no_backup: bool,
   pub(super) no_limit: bool,
   pub(super) parent_info: Option<ParentInfo>,
@@ -22,11 +25,14 @@ impl Default for Batch {
     Batch {
       commit_fee_rate: 1.0.try_into().unwrap(),
       commit_only: false,
+      commitment: None,
+      commitment_output: None,
       destinations: Vec::new(),
       dry_run: false,
       inscriptions: Vec::new(),
       key: None,
       mode: Mode::SharedOutput,
+      next_inscription: None,
       no_backup: false,
       no_limit: false,
       parent_info: None,
@@ -47,6 +53,9 @@ impl Batch {
     locked_utxos: &BTreeSet<OutPoint>,
     utxos: &BTreeMap<OutPoint, Amount>,
   ) -> SubcommandResult {
+    if self.next_inscription.is_some() {
+      return Err(anyhow!("--next-file isn't ready"));
+    }
     let wallet_inscriptions = index.get_inscriptions(utxos)?;
 
     let commit_tx_change = [
@@ -65,7 +74,11 @@ impl Batch {
 
     if self.dry_run {
       return Ok(Box::new(self.output(
-        commit_tx.txid(),
+        if self.commitment.is_some() {
+          None
+        } else {
+          Some(commit_tx.txid())
+        },
         if self.commit_only {
           None
         } else {
@@ -109,37 +122,36 @@ impl Batch {
       Self::backup_recovery_key(client, recovery_key_pair, chain.network())?;
     }
 
-    let commit = client.send_raw_transaction(&signed_commit_tx)?;
-
-    if self.commit_only {
-      Ok(Box::new(self.output(
-        commit,
-        None,
-        total_fees,
-        self.inscriptions.clone(),
-      )))
+    let commit = if self.commitment.is_some() {
+      None
     } else {
-    let reveal = match client.send_raw_transaction(&signed_reveal_tx) {
-      Ok(txid) => txid,
-      Err(err) => {
-        return Err(anyhow!(
-        "Failed to send reveal transaction: {err}\nCommit tx {commit} will be recovered once mined"
+      Some(client.send_raw_transaction(&signed_commit_tx)?)
+    };
+
+    let reveal = if self.commit_only {
+      None
+    } else {
+    match client.send_raw_transaction(&signed_reveal_tx) {
+    Ok(txid) => Some(txid),
+    Err(err) => {
+      return Err(anyhow!(
+        "Failed to send reveal transaction: {err}\nCommit tx {:?} will be recovered once mined", commit
       ))
-      }
+    }
+    }
     };
 
     Ok(Box::new(self.output(
       commit,
-      Some(reveal),
+      reveal,
       total_fees,
       self.inscriptions.clone(),
     )))
   }
-  }
 
   fn output(
     &self,
-    commit: Txid,
+    commit: Option<Txid>,
     reveal: Option<Txid>,
     total_fees: u64,
     inscriptions: Vec<Inscription>,
@@ -336,6 +348,13 @@ impl Batch {
 
     let commit_input = if self.parent_info.is_some() { 1 } else { 0 };
 
+    if self.commitment.is_some() {
+      reveal_outputs.push(TxOut {
+        script_pubkey: self.destinations[0].script_pubkey(), // todo - use next file's commitment address
+        value: 0,
+      });
+    }
+
     let (_, reveal_fee) = Self::build_reveal_transaction(
       &control_block,
       self.reveal_fee_rate,
@@ -368,10 +387,20 @@ impl Batch {
       .find(|(_vout, output)| output.script_pubkey == commit_tx_address.script_pubkey())
       .expect("should find sat commit/inscription output");
 
-    reveal_inputs[commit_input] = OutPoint {
+    reveal_inputs[commit_input] = if self.commitment.is_some() {
+      self.commitment.unwrap()
+    } else {
+      OutPoint {
       txid: unsigned_commit_tx.txid(),
       vout: vout.try_into().unwrap(),
-    };
+      }
+    };      
+
+    if self.commitment.is_some() {
+      if let Some(last) = reveal_outputs.last_mut() {
+        (*last).value = (self.commitment_output.clone().unwrap().value - total_postage - reveal_fee).to_sat();
+      }
+    }
 
     let (mut reveal_tx, _fee) = Self::build_reveal_transaction(
       &control_block,
@@ -391,7 +420,16 @@ impl Batch {
       bail!("commit transaction output would be dust");
     }
 
-    let mut prevouts = vec![unsigned_commit_tx.output[vout].clone()];
+    let mut prevouts = vec![
+      if self.commitment.is_some() {
+        TxOut {
+          value: self.commitment_output.clone().unwrap().value.to_sat(),
+          script_pubkey: self.commitment_output.clone().unwrap().script_pub_key.script()?
+        }
+      } else {
+        unsigned_commit_tx.output[vout].clone()
+      }
+    ];
 
     if let Some(parent_info) = self.parent_info.clone() {
       prevouts.insert(0, parent_info.tx_out);
@@ -450,14 +488,26 @@ impl Batch {
 
     utxos.insert(
       reveal_tx.input[commit_input].previous_output,
+      if self.commitment.is_some() {
+        self.commitment_output.clone().unwrap().value
+      } else {
       Amount::from_sat(
         unsigned_commit_tx.output[reveal_tx.input[commit_input].previous_output.vout as usize]
           .value,
-      ),
+      )
+      },
     );
 
     let total_fees =
-      Self::calculate_fee(&unsigned_commit_tx, &utxos) + Self::calculate_fee(&reveal_tx, &utxos);
+      if self.commitment.is_some() {
+        0
+      } else {
+        Self::calculate_fee(&unsigned_commit_tx, &utxos)
+      } + if self.commit_only {
+        0
+      } else {
+        Self::calculate_fee(&reveal_tx, &utxos)
+      };
 
     Ok((unsigned_commit_tx, reveal_tx, recovery_key_pair, total_fees))
   }

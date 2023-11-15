@@ -14,7 +14,7 @@ use {
     taproot::{ControlBlock, LeafVersion, TapLeafHash, TaprootBuilder},
     ScriptBuf, Witness,
   },
-  bitcoincore_rpc::bitcoincore_rpc_json::{ImportDescriptors, SignRawTransactionInput, Timestamp},
+  bitcoincore_rpc::bitcoincore_rpc_json::{GetRawTransactionResultVout, ImportDescriptors, SignRawTransactionInput, Timestamp},
   bitcoincore_rpc::Client,
   std::collections::BTreeSet,
 };
@@ -29,7 +29,7 @@ pub struct InscriptionInfo {
 
 #[derive(Serialize, Deserialize)]
 pub struct Output {
-  pub commit: Txid,
+  pub commit: Option<Txid>,
   pub inscriptions: Vec<InscriptionInfo>,
   pub parent: Option<InscriptionId>,
   pub reveal: Option<Txid>,
@@ -159,6 +159,7 @@ impl Inscribe {
     let inscriptions;
     let mode;
     let parent_info;
+    let next_inscription;
 
     match (self.file, self.batch) {
       (Some(file), None) => {
@@ -168,9 +169,21 @@ impl Inscribe {
           file,
           self.parent,
           None,
-          self.metaprotocol,
-          metadata,
+          self.metaprotocol.clone(),
+          metadata.clone(),
         )?];
+        next_inscription = if self.next_file.is_some() {
+          Some(Inscription::from_file(
+            chain,
+            self.next_file.unwrap(),
+            self.parent,
+            None,
+            self.metaprotocol,
+            metadata,
+          )?)
+        } else {
+          None
+        };
         mode = Mode::SeparateOutputs;
         destinations = vec![match self.destination.clone() {
           Some(destination) => destination.require_network(chain.network())?,
@@ -188,6 +201,7 @@ impl Inscribe {
           metadata,
           postage,
         )?;
+        next_inscription = None;
 
         mode = batchfile.mode;
 
@@ -206,11 +220,18 @@ impl Inscribe {
     Batch {
       commit_fee_rate: self.commit_fee_rate.unwrap_or(self.fee_rate),
       commit_only: self.commit_only,
+      commitment: self.commitment,
+      commitment_output: if self.commitment.is_some() {
+        Some(client.get_raw_transaction_info(&self.commitment.unwrap().txid, None)?.vout[0].clone())
+      } else {
+        None
+      },
       destinations,
       dry_run: self.dry_run,
       inscriptions,
       key: self.key,
       mode,
+      next_inscription,
       no_backup: self.no_backup,
       no_limit: self.no_limit,
       parent_info,
