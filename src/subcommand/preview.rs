@@ -98,6 +98,9 @@ impl Preview {
             reinscribe: false,
             satpoint: None,
             key: None,
+            commit_only: false,
+            commitment: None,
+            next_file: None,
           },
         )),
       }

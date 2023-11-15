@@ -113,6 +113,12 @@ pub(crate) struct Inscribe {
   pub(crate) satpoint: Option<SatPoint>,
   #[clap(long, help = "Use provided recovery key instead of a random one.")]
   pub(crate) key: Option<String>,
+  #[clap(long, help = "Don't make a reveal tx; just create a commit tx that sends all the sats to a new commitment. Requires --key to be specified.")]
+  pub(crate) commit_only: bool,
+  #[clap(long, help = "Make the change of the reveal tx commit to the contents of <NEXT-FILE>.")]
+  pub(crate) commitment: Option<OutPoint>,
+  #[clap(long, help = "Don't make a commit transaction; just create a reveal tx that reveals the inscription committed to by output <COMMITMENT>. Requires --key to be specified.")]
+  pub(crate) next_file: Option<PathBuf>,
 }
 
 impl Inscribe {
