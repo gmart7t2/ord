@@ -2,6 +2,7 @@ use super::*;
 
 pub(super) struct Batch {
   pub(super) commit_fee_rate: FeeRate,
+  pub(super) commit_only: bool,
   pub(super) destinations: Vec<Address>,
   pub(super) dry_run: bool,
   pub(super) inscriptions: Vec<Inscription>,
@@ -20,6 +21,7 @@ impl Default for Batch {
   fn default() -> Batch {
     Batch {
       commit_fee_rate: 1.0.try_into().unwrap(),
+      commit_only: false,
       destinations: Vec::new(),
       dry_run: false,
       inscriptions: Vec::new(),
@@ -64,7 +66,11 @@ impl Batch {
     if self.dry_run {
       return Ok(Box::new(self.output(
         commit_tx.txid(),
-        reveal_tx.txid(),
+        if self.commit_only {
+          None
+        } else {
+          Some(reveal_tx.txid())
+        },
         total_fees,
         self.inscriptions.clone(),
       )));
@@ -105,6 +111,14 @@ impl Batch {
 
     let commit = client.send_raw_transaction(&signed_commit_tx)?;
 
+    if self.commit_only {
+      Ok(Box::new(self.output(
+        commit,
+        None,
+        total_fees,
+        self.inscriptions.clone(),
+      )))
+    } else {
     let reveal = match client.send_raw_transaction(&signed_reveal_tx) {
       Ok(txid) => txid,
       Err(err) => {
@@ -116,16 +130,17 @@ impl Batch {
 
     Ok(Box::new(self.output(
       commit,
-      reveal,
+      Some(reveal),
       total_fees,
       self.inscriptions.clone(),
     )))
+  }
   }
 
   fn output(
     &self,
     commit: Txid,
-    reveal: Txid,
+    reveal: Option<Txid>,
     total_fees: u64,
     inscriptions: Vec<Inscription>,
   ) -> super::Output {
@@ -155,16 +170,18 @@ impl Batch {
         Mode::SeparateOutputs => 0,
       };
 
+      if !self.commit_only {
       inscriptions_output.push(InscriptionInfo {
         id: InscriptionId {
-          txid: reveal,
+          txid: reveal.unwrap(),
           index,
         },
         location: SatPoint {
-          outpoint: OutPoint { txid: reveal, vout },
+          outpoint: OutPoint { txid: reveal.unwrap(), vout },
           offset,
         },
       });
+    }
     }
 
     super::Output {
@@ -336,7 +353,11 @@ impl Batch {
       commit_tx_address.clone(),
       change,
       self.commit_fee_rate,
-      Target::Value(reveal_fee + total_postage),
+      if self.commit_only {
+        Target::NoChange(reveal_fee + total_postage)
+      } else {
+        Target::Value(reveal_fee + total_postage)
+      },
     )
     .build_transaction()?;
 

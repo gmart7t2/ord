@@ -32,7 +32,7 @@ pub struct Output {
   pub commit: Txid,
   pub inscriptions: Vec<InscriptionInfo>,
   pub parent: Option<InscriptionId>,
-  pub reveal: Txid,
+  pub reveal: Option<Txid>,
   pub total_fees: u64,
 }
 
@@ -205,6 +205,7 @@ impl Inscribe {
 
     Batch {
       commit_fee_rate: self.commit_fee_rate.unwrap_or(self.fee_rate),
+      commit_only: self.commit_only,
       destinations,
       dry_run: self.dry_run,
       inscriptions,

@@ -66,6 +66,7 @@ pub enum Target {
   Value(Amount),
   Postage,
   ExactPostage(Amount),
+  NoChange(Amount),
 }
 
 impl fmt::Display for Error {
@@ -293,7 +294,7 @@ impl TransactionBuilder {
 
     let min_value = match self.target {
       Target::Postage => self.outputs.last().unwrap().0.script_pubkey().dust_value(),
-      Target::Value(value) | Target::ExactPostage(value) => value,
+      Target::Value(value) | Target::ExactPostage(value) | Target::NoChange(value) => value,
     };
 
     let total = min_value
@@ -353,6 +354,7 @@ impl TransactionBuilder {
         Target::ExactPostage(postage) => (postage, postage),
         Target::Postage => (Self::MAX_POSTAGE, Self::TARGET_POSTAGE),
         Target::Value(value) => (value, value),
+        Target::NoChange(_) => (excess, excess),
       };
 
       if excess > max
@@ -584,6 +586,12 @@ impl TransactionBuilder {
                   .unwrap_or_default()
                   + slop,
               "invariant: output equals target value",
+            );
+          }
+          Target::NoChange(value) => {
+            assert!(
+              Amount::from_sat(output.value) >= value,
+              "invariant: output is at least the target amount"
             );
           }
         }
