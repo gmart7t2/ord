@@ -263,7 +263,7 @@ impl Batch {
           outpoint: *outpoint,
           offset: 0,
         })
-        .ok_or_else(|| anyhow!("wallet contains no cardinal utxos 2"))?
+        .ok_or_else(|| anyhow!("wallet contains no cardinal utxos"))?
     };
 
     let mut reinscription = false;
