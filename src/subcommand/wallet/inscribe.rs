@@ -222,7 +222,7 @@ impl Inscribe {
       commit_only: self.commit_only,
       commitment: self.commitment,
       commitment_output: if self.commitment.is_some() {
-        Some(client.get_raw_transaction_info(&self.commitment.unwrap().txid, None)?.vout[0].clone())
+        Some(client.get_raw_transaction_info(&self.commitment.unwrap().txid, None)?.vout[self.commitment.unwrap().vout as usize].clone())
       } else {
         None
       },

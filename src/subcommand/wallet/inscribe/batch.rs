@@ -53,9 +53,6 @@ impl Batch {
     locked_utxos: &BTreeSet<OutPoint>,
     utxos: &BTreeMap<OutPoint, Amount>,
   ) -> SubcommandResult {
-    if self.next_inscription.is_some() {
-      return Err(anyhow!("--next-file isn't ready"));
-    }
     let wallet_inscriptions = index.get_inscriptions(utxos)?;
 
     let commit_tx_change = [
@@ -220,6 +217,10 @@ impl Batch {
         .all(|inscription| inscription.parent().unwrap() == parent_info.id))
     }
 
+    if self.next_inscription.is_some() && self.commitment.is_none() {
+      return Err(anyhow!("--next-file doesn't work without --commitment"));
+    }
+
     if self.satpoint.is_some() {
       assert_eq!(
         self.inscriptions.len(),
@@ -314,6 +315,26 @@ impl Batch {
 
     let commit_tx_address = Address::p2tr_tweaked(taproot_spend_info.output_key(), chain.network());
 
+    let reveal_change_address = if self.next_inscription.is_some() {
+      let next_inscriptions = vec![self.next_inscription.clone().unwrap()];
+      let next_reveal_script = Inscription::append_batch_reveal_script(
+        &next_inscriptions,
+        ScriptBuf::builder()
+          .push_slice(public_key.serialize())
+          .push_opcode(opcodes::all::OP_CHECKSIG),
+      );
+
+      let next_taproot_spend_info = TaprootBuilder::new()
+        .add_leaf(0, next_reveal_script.clone())
+        .expect("adding leaf should work")
+        .finalize(&secp256k1, public_key)
+        .expect("finalizing taproot builder should work");
+
+      Address::p2tr_tweaked(next_taproot_spend_info.output_key(), chain.network())
+    } else {
+      change[0].clone()
+    };
+
     let total_postage = self.postage * u64::try_from(self.inscriptions.len()).unwrap();
 
     let mut reveal_inputs = vec![OutPoint::null()];
@@ -350,7 +371,7 @@ impl Batch {
 
     if self.commitment.is_some() {
       reveal_outputs.push(TxOut {
-        script_pubkey: self.destinations[0].script_pubkey(), // todo - use next file's commitment address
+        script_pubkey: reveal_change_address.script_pubkey(),
         value: 0,
       });
     }
