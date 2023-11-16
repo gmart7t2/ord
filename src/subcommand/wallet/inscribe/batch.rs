@@ -86,9 +86,13 @@ impl Batch {
       )));
     }
 
-    let signed_commit_tx = client
+    let signed_commit_tx = if self.commitment.is_some() {
+      Vec::new()
+    } else {
+      client
       .sign_raw_transaction_with_wallet(&commit_tx, None, None)?
-      .hex;
+      .hex
+    };
 
     let signed_reveal_tx = if self.parent_info.is_some() {
       client
@@ -242,7 +246,9 @@ impl Batch {
       ),
     }
 
-    let satpoint = if let Some(satpoint) = self.satpoint {
+    let satpoint = if self.commitment.is_some() {
+      SatPoint::from_str("0000000000000000000000000000000000000000000000000000000000000000:0:0")?
+    } else if let Some(satpoint) = self.satpoint {
       satpoint
     } else {
       let inscribed_utxos = wallet_inscriptions
@@ -257,7 +263,7 @@ impl Batch {
           outpoint: *outpoint,
           offset: 0,
         })
-        .ok_or_else(|| anyhow!("wallet contains no cardinal utxos"))?
+        .ok_or_else(|| anyhow!("wallet contains no cardinal utxos 2"))?
     };
 
     let mut reinscription = false;
@@ -385,7 +391,15 @@ impl Batch {
       &reveal_script,
     );
 
-    let unsigned_commit_tx = TransactionBuilder::new(
+    let unsigned_commit_tx = if self.commitment.is_some() {
+      Transaction {
+        version: 0,
+        lock_time: LockTime::ZERO,
+        input: vec![],
+        output: vec![],
+      }
+    } else {
+      TransactionBuilder::new(
       satpoint,
       wallet_inscriptions,
       utxos.clone(),
@@ -398,30 +412,33 @@ impl Batch {
       } else {
         Target::Value(reveal_fee + total_postage)
       },
-    )
-    .build_transaction()?;
+      )
+        .build_transaction()?
+    };
 
-    let (vout, _commit_output) = unsigned_commit_tx
-      .output
-      .iter()
-      .enumerate()
-      .find(|(_vout, output)| output.script_pubkey == commit_tx_address.script_pubkey())
-      .expect("should find sat commit/inscription output");
+    let vout = if self.commitment.is_some() {
+      reveal_inputs[commit_input] = self.commitment.unwrap();
 
-    reveal_inputs[commit_input] = if self.commitment.is_some() {
-      self.commitment.unwrap()
-    } else {
-      OutPoint {
-      txid: unsigned_commit_tx.txid(),
-      vout: vout.try_into().unwrap(),
-      }
-    };      
-
-    if self.commitment.is_some() {
       if let Some(last) = reveal_outputs.last_mut() {
         (*last).value = (self.commitment_output.clone().unwrap().value - total_postage - reveal_fee).to_sat();
       }
-    }
+
+      0
+    } else {
+      let (vout, _commit_output) = unsigned_commit_tx
+        .output
+        .iter()
+        .enumerate()
+        .find(|(_vout, output)| output.script_pubkey == commit_tx_address.script_pubkey())
+        .expect("should find sat commit/inscription output");
+
+      reveal_inputs[commit_input] = OutPoint {
+        txid: unsigned_commit_tx.txid(),
+        vout: vout.try_into().unwrap(),
+      };
+
+      vout
+    };
 
     let (mut reveal_tx, _fee) = Self::build_reveal_transaction(
       &control_block,
