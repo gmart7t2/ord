@@ -132,7 +132,7 @@ impl Batch {
     Ok(txid) => Some(txid),
     Err(err) => {
       return Err(anyhow!(
-        "Failed to send reveal transaction: {err}\nCommit tx {:?} will be recovered once mined", commit
+        format!("Failed to send reveal transaction: {err}{}", if commit.is_some() { format!("\nCommit tx {:?} will be recovered once mined", commit) } else { "".to_string() })
       ))
     }
     }
