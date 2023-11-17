@@ -101,6 +101,7 @@ impl Preview {
             commit_only: false,
             commitment: None,
             next_file: None,
+            reveal_input: Vec::new(),
             dump: false,
             no_broadcast: false,
           },

@@ -19,6 +19,7 @@ pub(super) struct Batch {
   pub(super) postage: Amount,
   pub(super) reinscribe: bool,
   pub(super) reveal_fee_rate: FeeRate,
+  pub(super) reveal_input: Vec<OutPoint>,
   pub(super) satpoint: Option<SatPoint>,
 }
 
@@ -43,6 +44,7 @@ impl Default for Batch {
       postage: Amount::from_sat(10_000),
       reinscribe: false,
       reveal_fee_rate: 1.0.try_into().unwrap(),
+      reveal_input: Vec::new(),
       satpoint: None,
     }
   }
@@ -67,6 +69,7 @@ impl Batch {
     let (commit_tx, reveal_tx, recovery_key_pair, total_fees) = self
       .create_batch_inscription_transactions(
         wallet_inscriptions,
+        index,
         chain,
         locked_utxos.clone(),
         utxos.clone(),
@@ -101,32 +104,44 @@ impl Batch {
       .hex
     };
 
-    let signed_reveal_tx = if self.parent_info.is_some() {
+    let mut reveal_input_info = Vec::new();
+
+    if self.parent_info.is_some() {
+      for (vout, output) in commit_tx.output.iter().enumerate() {
+        reveal_input_info.push(SignRawTransactionInput {
+          txid: commit_tx.txid(),
+          vout: vout.try_into().unwrap(),
+          script_pub_key: output.script_pubkey.clone(),
+          redeem_script: None,
+          amount: Some(Amount::from_sat(output.value)),
+        });
+      }
+    }
+
+    for input in &self.reveal_input {
+      let output = index.get_transaction(input.txid)?.unwrap().output[input.vout as usize].clone();
+      reveal_input_info.push(SignRawTransactionInput {
+        txid: input.txid,
+        vout: input.vout,
+        script_pub_key: output.script_pubkey.clone(),
+        redeem_script: None,
+        amount: Some(Amount::from_sat(output.value)),
+      });
+    }
+
+    let signed_reveal_tx = if reveal_input_info.is_empty() {
+      bitcoin::consensus::encode::serialize(&reveal_tx)
+    } else {
       client
         .sign_raw_transaction_with_wallet(
           &reveal_tx,
-          Some(
-            &commit_tx
-              .output
-              .iter()
-              .enumerate()
-              .map(|(vout, output)| SignRawTransactionInput {
-                txid: commit_tx.txid(),
-                vout: vout.try_into().unwrap(),
-                script_pub_key: output.script_pubkey.clone(),
-                redeem_script: None,
-                amount: Some(Amount::from_sat(output.value)),
-              })
-              .collect::<Vec<SignRawTransactionInput>>(),
-          ),
+          Some(&reveal_input_info),
           None,
         )?
         .hex
-    } else {
-      bitcoin::consensus::encode::serialize(&reveal_tx)
     };
 
-    if !self.no_backup {
+    if !self.no_backup && self.key.is_none() {
       Self::backup_recovery_key(client, recovery_key_pair, chain.network())?;
     }
 
@@ -234,6 +249,7 @@ impl Batch {
   pub(crate) fn create_batch_inscription_transactions(
     &self,
     wallet_inscriptions: BTreeMap<SatPoint, InscriptionId>,
+    index: &Index,
     chain: Chain,
     locked_utxos: BTreeSet<OutPoint>,
     mut utxos: BTreeMap<OutPoint, Amount>,
@@ -368,7 +384,8 @@ impl Batch {
 
     let total_postage = self.postage * u64::try_from(self.inscriptions.len()).unwrap();
 
-    let mut reveal_inputs = vec![OutPoint::null()];
+    let mut reveal_inputs = self.reveal_input.clone();
+    reveal_inputs.insert(0, OutPoint::null());
     let mut reveal_outputs = self
       .destinations
       .iter()
@@ -441,11 +458,20 @@ impl Batch {
         .build_transaction()?
     };
 
+    let mut reveal_input_value = Amount::from_sat(0);
+    let mut reveal_input_prevouts = Vec::new();
+    for i in &self.reveal_input {
+      let output = index.get_transaction(i.txid)?.unwrap().output[i.vout as usize].clone();
+      reveal_input_value += Amount::from_sat(output.value);
+      reveal_input_prevouts.push(output.clone());
+      utxos.insert(*i, Amount::from_sat(output.value));
+    }
+
     let vout = if self.commitment.is_some() {
       reveal_inputs[commit_input] = self.commitment.unwrap();
 
       if let Some(last) = reveal_outputs.last_mut() {
-        (*last).value = (self.commitment_output.clone().unwrap().value - total_postage - reveal_fee).to_sat();
+        (*last).value = (reveal_input_value + self.commitment_output.clone().unwrap().value - total_postage - reveal_fee).to_sat();
       }
 
       0
@@ -497,6 +523,8 @@ impl Batch {
     if let Some(parent_info) = self.parent_info.clone() {
       prevouts.insert(0, parent_info.tx_out);
     }
+
+    prevouts.extend(reveal_input_prevouts);
 
     let mut sighash_cache = SighashCache::new(&mut reveal_tx);
 
