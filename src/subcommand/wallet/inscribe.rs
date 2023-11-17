@@ -139,11 +139,11 @@ pub(crate) struct Inscribe {
 
 impl Inscribe {
   pub(crate) fn run(self, options: Options) -> SubcommandResult {
-    if self.commitment.is_some() && self.commit_only {
+    if self.commit_only && self.commitment.is_some() {
       return Err(anyhow!("--commit-only and --commitment don't work together"));
     }
 
-    if self.commitment.is_some() && self.next_file.is_some() {
+    if self.commit_only && self.next_file.is_some() {
       return Err(anyhow!("--commit-only and --next_file don't work together"));
     }
 
