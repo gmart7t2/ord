@@ -16,6 +16,7 @@ use {
   },
   bitcoincore_rpc::bitcoincore_rpc_json::{GetRawTransactionResultVout, ImportDescriptors, SignRawTransactionInput, Timestamp},
   bitcoincore_rpc::Client,
+  bitcoincore_rpc::RawTx,
   std::collections::BTreeSet,
 };
 
@@ -29,10 +30,19 @@ pub struct InscriptionInfo {
 
 #[derive(Serialize, Deserialize)]
 pub struct Output {
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub commit: Option<Txid>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub commit_hex: Option<String>,
   pub inscriptions: Vec<InscriptionInfo>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub parent: Option<InscriptionId>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub recovery_descriptor: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub reveal: Option<Txid>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub reveal_hex: Option<String>,
   pub total_fees: u64,
 }
 
@@ -119,6 +129,10 @@ pub(crate) struct Inscribe {
   pub(crate) commitment: Option<OutPoint>,
   #[clap(long, help = "Don't make a commit transaction; just create a reveal tx that reveals the inscription committed to by output <COMMITMENT>. Requires --key to be specified.")]
   pub(crate) next_file: Option<PathBuf>,
+  #[clap(long, help = "Dump raw hex transactions and recovery keys to standard output.")]
+  pub(crate) dump: bool,
+  #[clap(long, help = "Do not broadcast any transactions. Implies --dump.")]
+  pub(crate) no_broadcast: bool,
 }
 
 impl Inscribe {
@@ -131,7 +145,12 @@ impl Inscribe {
       return Err(anyhow!("--commit-only and --next_file don't work together"));
     }
 
+    let mut dump = self.dump;
     let metadata = Inscribe::parse_metadata(self.cbor_metadata, self.json_metadata)?;
+
+    if self.no_broadcast {
+      dump = true;
+    }
 
     let index = Index::open(&options)?;
     index.update()?;
@@ -235,12 +254,14 @@ impl Inscribe {
         None
       },
       destinations,
+      dump,
       dry_run: self.dry_run,
       inscriptions,
       key: self.key,
       mode,
       next_inscription,
       no_backup: self.no_backup,
+      no_broadcast: self.no_broadcast,
       no_limit: self.no_limit,
       parent_info,
       postage,

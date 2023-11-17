@@ -101,6 +101,8 @@ impl Preview {
             commit_only: false,
             commitment: None,
             next_file: None,
+            dump: false,
+            no_broadcast: false,
           },
         )),
       }

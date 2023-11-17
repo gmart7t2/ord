@@ -6,12 +6,14 @@ pub(super) struct Batch {
   pub(super) commitment: Option<OutPoint>,
   pub(super) commitment_output: Option<GetRawTransactionResultVout>,
   pub(super) destinations: Vec<Address>,
+  pub(super) dump: bool,
   pub(super) dry_run: bool,
   pub(super) inscriptions: Vec<Inscription>,
   pub(super) key: Option<String>,
   pub(super) mode: Mode,
   pub(super) next_inscription: Option<Inscription>,
   pub(super) no_backup: bool,
+  pub(super) no_broadcast: bool,
   pub(super) no_limit: bool,
   pub(super) parent_info: Option<ParentInfo>,
   pub(super) postage: Amount,
@@ -28,12 +30,14 @@ impl Default for Batch {
       commitment: None,
       commitment_output: None,
       destinations: Vec::new(),
+      dump: false,
       dry_run: false,
       inscriptions: Vec::new(),
       key: None,
       mode: Mode::SharedOutput,
       next_inscription: None,
       no_backup: false,
+      no_broadcast: false,
       no_limit: false,
       parent_info: None,
       postage: Amount::from_sat(10_000),
@@ -81,6 +85,9 @@ impl Batch {
         } else {
           Some(reveal_tx.txid())
         },
+        None,
+        None,
+        None,
         total_fees,
         self.inscriptions.clone(),
       )));
@@ -123,6 +130,12 @@ impl Batch {
       Self::backup_recovery_key(client, recovery_key_pair, chain.network())?;
     }
 
+    let (commit, reveal) = if self.no_broadcast {
+      (if self.commitment.is_some() { None }
+      	  else { Some(client.decode_raw_transaction(&signed_commit_tx, None)?.txid) },
+       if self.commit_only { None }
+       	  else { Some(client.decode_raw_transaction(&signed_reveal_tx, None)?.txid) })
+    } else {
     let commit = if self.commitment.is_some() {
       None
     } else {
@@ -142,9 +155,15 @@ impl Batch {
     }
     };
 
+    (commit, reveal)
+    };
+
     Ok(Box::new(self.output(
       commit,
       reveal,
+      if self.dump && self.commitment.is_none() { Some(signed_commit_tx.raw_hex()) } else { None },
+      if self.dump && !self.commit_only { Some(signed_reveal_tx.raw_hex()) } else { None },
+      if self.dump { Some(Self::get_recovery_key(&client, recovery_key_pair, chain.network())?.to_string()) } else { None },
       total_fees,
       self.inscriptions.clone(),
     )))
@@ -154,6 +173,9 @@ impl Batch {
     &self,
     commit: Option<Txid>,
     reveal: Option<Txid>,
+    commit_hex: Option<String>,
+    reveal_hex: Option<String>,
+    recovery_descriptor: Option<String>,
     total_fees: u64,
     inscriptions: Vec<Inscription>,
   ) -> super::Output {
@@ -199,7 +221,10 @@ impl Batch {
 
     super::Output {
       commit,
+      commit_hex,
       reveal,
+      reveal_hex,
+      recovery_descriptor,
       total_fees,
       parent: self.parent_info.clone().map(|info| info.id),
       inscriptions: inscriptions_output,
@@ -548,6 +573,22 @@ impl Batch {
       };
 
     Ok((unsigned_commit_tx, reveal_tx, recovery_key_pair, total_fees))
+  }
+
+  fn get_recovery_key(
+    client: &Client,
+    recovery_key_pair: TweakedKeyPair,
+    network: Network,
+  ) -> Result<String> {
+    let recovery_private_key =
+      PrivateKey::new(recovery_key_pair.to_inner().secret_key(), network).to_wif();
+    Ok(format!(
+      "rawtr({})#{}",
+      recovery_private_key,
+      client
+        .get_descriptor_info(&format!("rawtr({})", recovery_private_key))?
+        .checksum
+    ))
   }
 
   fn backup_recovery_key(
