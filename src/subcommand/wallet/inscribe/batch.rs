@@ -338,7 +338,9 @@ impl Batch {
       secp256k1::KeyPair::from_secret_key(&secp256k1, &PrivateKey::from_wif(&self.key.clone().unwrap())?.inner)
     } else {
       let key_pair = UntweakedKeyPair::new(&secp256k1, &mut rand::thread_rng());
-      log::info!("random backup key: {}", PrivateKey::new(key_pair.secret_key(), chain.network()).to_wif());
+      if self.commit_only {
+        eprintln!("use --key {} to reveal this commitment", PrivateKey::new(key_pair.secret_key(), chain.network()).to_wif());
+      }
       key_pair
     };
     let (public_key, _parity) = XOnlyPublicKey::from_keypair(&key_pair);

@@ -139,6 +139,10 @@ pub(crate) struct Inscribe {
 
 impl Inscribe {
   pub(crate) fn run(self, options: Options) -> SubcommandResult {
+    if self.commitment.is_some() && self.key.is_none() {
+      return Err(anyhow!("--commitment only works with --key"));
+    }
+
     if self.commit_only && self.commitment.is_some() {
       return Err(anyhow!("--commit-only and --commitment don't work together"));
     }
