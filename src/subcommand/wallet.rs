@@ -24,6 +24,7 @@ pub mod receive;
 mod restore;
 pub mod sats;
 pub mod send;
+pub mod sendmany;
 pub mod transaction_builder;
 pub mod transactions;
 
@@ -45,6 +46,8 @@ pub(crate) enum Wallet {
   Sats(sats::Sats),
   #[command(about = "Send sat or inscription")]
   Send(send::Send),
+  #[command(about = "Send multiple inscriptions in a single transaction")]
+  SendMany(sendmany::SendMany),
   #[command(about = "See wallet transactions")]
   Transactions(transactions::Transactions),
   #[command(about = "List all unspent outputs in wallet")]
@@ -72,6 +75,7 @@ impl Wallet {
       Self::Restore(restore) => restore.run(options),
       Self::Sats(sats) => sats.run(options),
       Self::Send(send) => send.run(options),
+      Self::SendMany(sendmany) => sendmany.run(options),
       Self::Transactions(transactions) => transactions.run(options),
       Self::Outputs => outputs::run(options),
       Self::Cardinals => cardinals::run(options),
