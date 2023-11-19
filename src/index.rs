@@ -1222,9 +1222,19 @@ impl Index {
     &self,
     utxos: &BTreeMap<OutPoint, Amount>,
   ) -> Result<BTreeMap<SatPoint, InscriptionId>> {
+    let mut result = BTreeMap::new();
+
+    result.extend(self.get_inscriptions_vector(utxos)?.into_iter());
+    Ok(result)
+  }
+
+  pub(crate) fn get_inscriptions_vector(
+    &self,
+    utxos: &BTreeMap<OutPoint, Amount>,
+  ) -> Result<Vec<(SatPoint, InscriptionId)>> {
     let rtx = self.database.begin_read()?;
 
-    let mut result = BTreeMap::new();
+    let mut result = Vec::new();
 
     let table = rtx.open_multimap_table(SATPOINT_TO_INSCRIPTION_ID)?;
     for utxo in utxos.keys() {

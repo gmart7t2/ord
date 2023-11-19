@@ -82,50 +82,86 @@ impl SendMany {
     // we get a tree <SatPoint, InscriptionId>, and turn it into
     //        a tree <InscriptionId, SatPoint>
     let mut inscriptions = BTreeMap::new();
-    for (satpoint, inscriptionid) in index.get_inscriptions(&unspent_outputs)? {
+    for (satpoint, inscriptionid) in index.get_inscriptions_vector(&unspent_outputs)? {
       inscriptions.insert(inscriptionid, satpoint);
     }
 
-    let mut ordered_inscriptions = Vec::new();
-    let mut total_value = 0;
     let mut inputs = Vec::new();
     let mut outputs = Vec::new();
 
+    let mut requested_satpoints: BTreeMap<SatPoint, (InscriptionId, Address)> = BTreeMap::new();
+
+    // this loop checks that we own all the listed inscriptions, and that we aren't listing the same sat more than once
+    for (inscriptionid, address) in &requested {
+      if !inscriptions.contains_key(&inscriptionid) {
+        bail!("inscriptionid {} isn't in the wallet", inscriptionid.to_string());
+      }
+
+      let satpoint = inscriptions[&inscriptionid];
+      if requested_satpoints.contains_key(&satpoint) {
+        bail!("inscriptionid {} is on the same sat as {}, and both appear in the CSV file", inscriptionid.to_string(), requested_satpoints[&satpoint].0);
+      }
+      requested_satpoints.insert(satpoint, (inscriptionid.clone(), address.clone()));
+    }
+/*
+    eprintln!("requested_satpoints:");
+    for (satpoint, (inscriptionid, address)) in &requested_satpoints {
+      eprintln!("  {} {} {}", satpoint.to_string(), inscriptionid.to_string(), address);
+      }
+    eprintln!("\n");
+*/
+    // this loop handles the inscriptions in order of offset in each utxo
     while !requested.is_empty() {
       let mut inscriptions_on_outpoint = Vec::new();
+      // pick the first remaining inscriptionid from the list
       for (inscriptionid, _address) in &requested {
-        if !inscriptions.contains_key(&inscriptionid) {
-          bail!("inscriptionid {} isn't in the wallet", inscriptionid.to_string());
-        }
-
-        let satpoint = inscriptions[inscriptionid];
-        let outpoint = satpoint.outpoint;
+        // look up which utxo it's in
+        let outpoint = inscriptions[inscriptionid].outpoint;
+        // get a list of the inscriptions in that utxo
         inscriptions_on_outpoint = index.get_inscriptions_on_output_with_satpoints(outpoint)?;
+        // sort it by offset
         inscriptions_on_outpoint.sort_by_key(|(s, _)| s.offset);
-        for (_satpoint, outpoint_inscriptionid) in &inscriptions_on_outpoint {
-          if !requested.contains_key(&outpoint_inscriptionid) {
+        // make sure that they are all in the csv file
+        for (satpoint, outpoint_inscriptionid) in &inscriptions_on_outpoint {
+          if !requested_satpoints.contains_key(&satpoint) {
             bail!("inscriptionid {} is in the same output as {} but wasn't in the CSV file", outpoint_inscriptionid.to_string(), inscriptionid.to_string());
           }
         }
         break;
       }
 
+      // create an input for the first inscription of each utxo
       let (first_satpoint, _first_inscription) = inscriptions_on_outpoint[0];
       let first_offset = first_satpoint.offset;
       let first_outpoint = first_satpoint.outpoint;
       let utxo_value = unspent_outputs[&first_outpoint].to_sat();
-
       if first_offset != 0 {
         bail!("the first inscription in {} is at non-zero offset {}", first_outpoint, first_offset);
       }
-
       eprintln!("\noutput {}, worth {}:", first_outpoint, utxo_value);
-      total_value += utxo_value;
-
       inputs.push(first_outpoint);
-
+/*
+      eprintln!("before:");
+      for (satpoint, inscriptionid) in &inscriptions_on_outpoint {
+        eprintln!("  inscriptions_on_outpoint has {} {}", satpoint.to_string(), inscriptionid.to_string());
+      }
+*/
+      // filter out the inscriptions that aren't in our list - these are inscriptions that are on the same sat as the ones we listed
+      // we want to remove just the ones where the satpoint is requested but the inscriptionid isn't
+      // ie. keep the ones where the satpoint isn't requested or the inscriptionid is
+      inscriptions_on_outpoint = inscriptions_on_outpoint.into_iter().filter(
+        |(satpoint, inscriptionid)| !requested_satpoints.contains_key(&satpoint) || requested.contains_key(&inscriptionid)
+      ).collect();
+/*
+      eprintln!("after:");
+      for (satpoint, inscriptionid) in &inscriptions_on_outpoint {
+        eprintln!("  inscriptions_on_outpoint has {} {}", satpoint.to_string(), inscriptionid.to_string());
+      }
+*/
+      // create an output for each inscription in this utxo
       for (i, (satpoint, inscriptionid)) in inscriptions_on_outpoint.iter().enumerate() {
-        let destination = &requested[inscriptionid];
+        // eprintln!("looking for satpoint {}", satpoint.to_string());
+        let destination = &requested_satpoints[&satpoint].1;
         let offset = satpoint.offset;
         let value = if i == inscriptions_on_outpoint.len() - 1 {
           utxo_value - offset
@@ -138,14 +174,15 @@ impl SendMany {
           bail!("inscription {} at {} is only followed by {} sats, less than dust limit {} for address {}",
                 inscriptionid, satpoint.to_string(), value, dust_limit, destination);
         }
-
         eprintln!("  {} : offset: {}, value: {}\n          id: {}\n        dest: {}", i, offset, value, inscriptionid, destination);
         outputs.push(TxOut{script_pubkey, value});
+
+        // remove each inscription in this utxo from the list
         requested.remove(&inscriptionid);
       }
-      ordered_inscriptions.extend(inscriptions_on_outpoint);
     }
 
+    // get a list of available unlocked cardinals
     let cardinals = Self::get_cardinals(unspent_outputs, locked_outputs, inscriptions);
 
     if cardinals.is_empty() {
@@ -155,10 +192,6 @@ impl SendMany {
     // select the biggest cardinal - this could be improved by figuring out what size we need, and picking the next biggest for example
     let (cardinal_outpoint, cardinal_value) = cardinals[0];
     eprintln!("\ncardinal:\n  {}, worth {}", cardinal_outpoint.to_string(), cardinal_value);
-
-    eprintln!("\ninputs without cardinal: {}", total_value);
-    total_value += cardinal_value;
-    eprintln!("inputs with cardinal: {}", total_value);
 
     inputs.push(cardinal_outpoint);
 
@@ -176,7 +209,7 @@ impl SendMany {
       bail!("cardinal ({}) is too small: we need enough for fee {} plus dust limit {} = {}", cardinal_value, fee, dust_limit, needed);
     }
     let value = cardinal_value - fee;
-    eprintln!("vsize: {}, fee: {}, change: {}\n", vsize, fee, value);
+    eprintln!("vsize: {}, fee: {}, change: {}", vsize, fee, value);
     let last = outputs.len() - 1;
     outputs[last] = TxOut{script_pubkey, value};
 
