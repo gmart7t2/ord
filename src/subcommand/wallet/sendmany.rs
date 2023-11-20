@@ -79,8 +79,7 @@ impl SendMany {
     let unspent_outputs = index.get_unspent_outputs(Wallet::load(&options)?)?;
     let locked_outputs = index.get_locked_outputs(Wallet::load(&options)?)?;
 
-    // we get a tree <SatPoint, InscriptionId>, and turn it into
-    //        a tree <InscriptionId, SatPoint>
+    // we get a vector of (SatPoint, InscriptionId), and turn it into a map <InscriptionId> -> <SatPoint>
     let mut inscriptions = BTreeMap::new();
     for (satpoint, inscriptionid) in index.get_inscriptions_vector(&unspent_outputs)? {
       inscriptions.insert(inscriptionid, satpoint);
@@ -103,13 +102,7 @@ impl SendMany {
       }
       requested_satpoints.insert(satpoint, (inscriptionid.clone(), address.clone()));
     }
-/*
-    eprintln!("requested_satpoints:");
-    for (satpoint, (inscriptionid, address)) in &requested_satpoints {
-      eprintln!("  {} {} {}", satpoint.to_string(), inscriptionid.to_string(), address);
-      }
-    eprintln!("\n");
-*/
+
     // this loop handles the inscriptions in order of offset in each utxo
     while !requested.is_empty() {
       let mut inscriptions_on_outpoint = Vec::new();
@@ -138,29 +131,17 @@ impl SendMany {
       if first_offset != 0 {
         bail!("the first inscription in {} is at non-zero offset {}", first_outpoint, first_offset);
       }
-      eprintln!("\noutput {}, worth {}:", first_outpoint, utxo_value);
       inputs.push(first_outpoint);
-/*
-      eprintln!("before:");
-      for (satpoint, inscriptionid) in &inscriptions_on_outpoint {
-        eprintln!("  inscriptions_on_outpoint has {} {}", satpoint.to_string(), inscriptionid.to_string());
-      }
-*/
-      // filter out the inscriptions that aren't in our list - these are inscriptions that are on the same sat as the ones we listed
-      // we want to remove just the ones where the satpoint is requested but the inscriptionid isn't
+
+      // filter out the inscriptions that aren't in our list, but are still to be sent - these are inscriptions that are on the same sat as the ones we listed
+      // we want to remove just the ones where the satpoint is requested but that particular inscriptionid isn't
       // ie. keep the ones where the satpoint isn't requested or the inscriptionid is
       inscriptions_on_outpoint = inscriptions_on_outpoint.into_iter().filter(
         |(satpoint, inscriptionid)| !requested_satpoints.contains_key(&satpoint) || requested.contains_key(&inscriptionid)
       ).collect();
-/*
-      eprintln!("after:");
-      for (satpoint, inscriptionid) in &inscriptions_on_outpoint {
-        eprintln!("  inscriptions_on_outpoint has {} {}", satpoint.to_string(), inscriptionid.to_string());
-      }
-*/
+
       // create an output for each inscription in this utxo
       for (i, (satpoint, inscriptionid)) in inscriptions_on_outpoint.iter().enumerate() {
-        // eprintln!("looking for satpoint {}", satpoint.to_string());
         let destination = &requested_satpoints[&satpoint].1;
         let offset = satpoint.offset;
         let value = if i == inscriptions_on_outpoint.len() - 1 {
@@ -174,7 +155,6 @@ impl SendMany {
           bail!("inscription {} at {} is only followed by {} sats, less than dust limit {} for address {}",
                 inscriptionid, satpoint.to_string(), value, dust_limit, destination);
         }
-        eprintln!("  {} : offset: {}, value: {}\n          id: {}\n        dest: {}", i, offset, value, inscriptionid, destination);
         outputs.push(TxOut{script_pubkey, value});
 
         // remove each inscription in this utxo from the list
@@ -191,17 +171,17 @@ impl SendMany {
 
     // select the biggest cardinal - this could be improved by figuring out what size we need, and picking the next biggest for example
     let (cardinal_outpoint, cardinal_value) = cardinals[0];
-    eprintln!("\ncardinal:\n  {}, worth {}", cardinal_outpoint.to_string(), cardinal_value);
 
+    // use the biggest cardinal as the last input
     inputs.push(cardinal_outpoint);
 
     let change_address = get_change_address(&client, chain)?;
     let script_pubkey = change_address.script_pubkey();
     let dust_limit = script_pubkey.dust_value().to_sat();
-    let value = 0;
+    let value = 0; // we don't know how much change to take until we know the fee, which means knowing the tx vsize
     outputs.push(TxOut{script_pubkey: script_pubkey.clone(), value});
 
-    // calculate the size of the tx once it is signed
+    // calculate the vsize of the tx once it is signed
     let vsize = Self::estimate_transaction_vsize(inputs.len(), outputs.clone());
     let fee = self.fee_rate.fee(vsize).to_sat();
     let needed = fee + dust_limit;
@@ -209,7 +189,6 @@ impl SendMany {
       bail!("cardinal ({}) is too small: we need enough for fee {} plus dust limit {} = {}", cardinal_value, fee, dust_limit, needed);
     }
     let value = cardinal_value - fee;
-    eprintln!("vsize: {}, fee: {}, change: {}", vsize, fee, value);
     let last = outputs.len() - 1;
     outputs[last] = TxOut{script_pubkey, value};
 
@@ -234,7 +213,7 @@ impl SendMany {
     let inscribed_utxos =
       inscriptions				// get a tree <InscriptionId, SatPoint> of the inscriptions we own
       .values()					// just the SatPoints
-      .map(|satpoint| satpoint.outpoint)		// just the OutPoints of those SatPoints
+      .map(|satpoint| satpoint.outpoint)	// just the OutPoints of those SatPoints
       .collect::<BTreeSet<OutPoint>>();		// as a set of OutPoints
 
     let mut cardinal_utxos = unspent_outputs
