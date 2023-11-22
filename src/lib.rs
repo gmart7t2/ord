@@ -95,7 +95,7 @@ mod test;
 #[cfg(test)]
 use self::test::*;
 
-macro_rules! tprintln {
+macro_rules! _tprintln {
     ($($arg:tt)*) => {
 
       if cfg!(test) {

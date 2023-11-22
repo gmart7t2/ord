@@ -218,7 +218,7 @@ impl TransactionBuilder {
     self.inputs.push(self.outgoing.outpoint);
     self.outputs.push((self.recipient.clone(), amount));
 
-    tprintln!(
+    println!(
       "selected outgoing outpoint {} with value {}",
       self.outgoing.outpoint,
       amount.to_sat()
@@ -238,9 +238,9 @@ impl TransactionBuilder {
     let sat_offset = self.calculate_sat_offset();
 
     if sat_offset == 0 {
-      tprintln!("outgoing is aligned");
+      println!("outgoing is aligned");
     } else {
-      tprintln!("aligned outgoing with {sat_offset} sat padding output");
+      println!("aligned outgoing with {sat_offset} sat padding output");
       self.outputs.insert(
         0,
         (
@@ -259,7 +259,7 @@ impl TransactionBuilder {
 
   fn pad_alignment_output(mut self) -> Result<Self> {
     if self.outputs[0].0 == self.recipient {
-      tprintln!("no alignment output");
+      println!("no alignment output");
     } else {
       let dust_limit = self
         .unused_change_addresses
@@ -269,7 +269,7 @@ impl TransactionBuilder {
         .dust_value();
 
       if self.outputs[0].1 >= dust_limit {
-        tprintln!("no padding needed");
+        println!("no padding needed");
       } else {
         while self.outputs[0].1 < dust_limit {
           let (utxo, size) = self.select_cardinal_utxo(dust_limit - self.outputs[0].1, true)?;
@@ -277,7 +277,7 @@ impl TransactionBuilder {
           self.inputs.insert(0, utxo);
           self.outputs[0].1 += size;
 
-          tprintln!(
+          println!(
             "padded alignment output to {} with additional {size} sat input",
             self.outputs[0].1
           );
@@ -319,10 +319,10 @@ impl TransactionBuilder {
         self.outputs.last_mut().unwrap().1 += value;
 
         if benefit > deficit {
-          tprintln!("added {value} sat input to cover {deficit} sat deficit");
+          println!("added {value} sat input to cover {deficit} sat deficit");
           deficit = Amount::ZERO;
         } else {
-          tprintln!("added {value} sat input to reduce {deficit} sat deficit by {benefit} sat");
+          println!("added {value} sat input to reduce {deficit} sat deficit by {benefit} sat");
           deficit -= benefit;
         }
       }
@@ -367,7 +367,7 @@ impl TransactionBuilder {
               .fee_rate
               .fee(self.estimate_vbytes() + Self::ADDITIONAL_OUTPUT_VBYTES)
       {
-        tprintln!("stripped {} sats", (value - target).to_sat());
+        println!("stripped {} sats", (value - target).to_sat());
         self.outputs.last_mut().expect("no outputs found").1 = target;
         self.outputs.push((
           self
@@ -655,7 +655,7 @@ impl TransactionBuilder {
     target_value: Amount,
     prefer_under: bool,
   ) -> Result<(OutPoint, Amount)> {
-    tprintln!(
+    println!(
       "looking for {} cardinal worth {target_value}",
       if prefer_under { "smaller" } else { "bigger" }
     );
@@ -668,7 +668,13 @@ impl TransactionBuilder {
 
     let mut best_match = None;
     for utxo in &self.utxos {
+      println!("  considering {} worth {}", utxo, self.amounts[utxo]);
       if inscribed_utxos.contains(utxo) || self.locked_utxos.contains(utxo) {
+        if inscribed_utxos.contains(utxo) {
+          println!("    rejecting because it is inscribed on");
+        } else {
+          println!("    rejecting because it is locked");
+        }
         continue;
       }
 
@@ -678,6 +684,7 @@ impl TransactionBuilder {
         Some(prev) => prev,
         None => {
           best_match = Some((*utxo, current_value));
+          println!("    first match is best match {}", current_value);
           (*utxo, current_value)
         }
       };
@@ -698,14 +705,17 @@ impl TransactionBuilder {
       };
 
       if is_preference_and_closer || not_preference_but_closer {
+        println!("    new best match {}", current_value);
         best_match = Some((*utxo, current_value))
+      } else {
+        println!("    not better");
       }
     }
 
     let (utxo, value) = best_match.ok_or(Error::NotEnoughCardinalUtxos)?;
 
     self.utxos.remove(&utxo);
-    tprintln!("found cardinal worth {}", value);
+    println!("found cardinal {} worth {}", utxo, value);
 
     Ok((utxo, value))
   }
