@@ -690,21 +690,35 @@ impl TransactionBuilder {
       };
 
       let abs_diff = |a: Amount, b: Amount| -> Amount { max(a, b) - min(a, b) };
+
+      // it's 'closer' if the gap between this utxo and the goal is less than the gap between the best utxo so far and the goal
+      // but what it's not 'closer', but still better? if we want 10 or more, and we have 5, then 100 isn't "closer", but it's better
       let is_closer = abs_diff(current_value, target_value) < abs_diff(best_value, target_value);
+      println!("      is_closer {} (diff({}, {}) = {} <? diff({}, {}) = {})",
+               is_closer, current_value, target_value, abs_diff(current_value, target_value), best_value, target_value, abs_diff(best_value, target_value));
 
       let not_preference_but_closer = if prefer_under {
         best_value > target_value && is_closer
       } else {
         best_value < target_value && is_closer
       };
+      println!("      not_preference_but_closer {}", not_preference_but_closer);
 
       let is_preference_and_closer = if prefer_under {
         current_value <= target_value && is_closer
       } else {
         current_value >= target_value && is_closer
       };
+      println!("      is_preference_and_closer {}", is_preference_and_closer);
 
-      if is_preference_and_closer || not_preference_but_closer {
+      let newly_meets_preference = if prefer_under {
+        best_value > target_value && current_value <= target_value
+      } else {
+        best_value < target_value && current_value >= target_value
+      };
+      println!("      newly_meets_preference {}", newly_meets_preference);
+
+      if is_preference_and_closer || not_preference_but_closer || newly_meets_preference {
         println!("    new best match {}", current_value);
         best_match = Some((*utxo, current_value))
       } else {
