@@ -21,6 +21,8 @@ pub(crate) struct Send {
     help = "Target amount of postage to include with sent inscriptions. Default `10000sat`"
   )]
   pub(crate) postage: Option<Amount>,
+  #[clap(long, help = "Require this utxo to be spent. Useful for forcing CPFP.")]
+  pub(crate) force_input: Vec<OutPoint>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -107,6 +109,7 @@ impl Send {
       change,
       self.fee_rate,
       postage,
+      self.force_input,
     )
     .build_transaction()?;
 

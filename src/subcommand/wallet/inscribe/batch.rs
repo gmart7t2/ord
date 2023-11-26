@@ -58,6 +58,7 @@ impl Batch {
     client: &Client,
     locked_utxos: &BTreeSet<OutPoint>,
     utxos: &BTreeMap<OutPoint, Amount>,
+    force_input: Vec<OutPoint>,
   ) -> SubcommandResult {
     let wallet_inscriptions = index.get_inscriptions(utxos)?;
 
@@ -74,6 +75,7 @@ impl Batch {
         locked_utxos.clone(),
         utxos.clone(),
         commit_tx_change,
+        force_input,
       )?;
 
     if self.dry_run {
@@ -254,6 +256,7 @@ impl Batch {
     locked_utxos: BTreeSet<OutPoint>,
     mut utxos: BTreeMap<OutPoint, Amount>,
     change: [Address; 2],
+    force_input: Vec<OutPoint>,
   ) -> Result<(Transaction, Transaction, TweakedKeyPair, u64)> {
     if let Some(parent_info) = &self.parent_info {
       assert!(self
@@ -456,6 +459,7 @@ impl Batch {
       } else {
         Target::Value(reveal_fee + total_postage)
       },
+      force_input,
       )
         .build_transaction()?
     };

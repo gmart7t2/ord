@@ -103,6 +103,7 @@ pub struct TransactionBuilder {
   amounts: BTreeMap<OutPoint, Amount>,
   change_addresses: BTreeSet<Address>,
   fee_rate: FeeRate,
+  force_input: Vec<OutPoint>,
   inputs: Vec<OutPoint>,
   inscriptions: BTreeMap<SatPoint, InscriptionId>,
   outgoing: SatPoint,
@@ -132,6 +133,7 @@ impl TransactionBuilder {
     change: [Address; 2],
     fee_rate: FeeRate,
     target: Target,
+    force_input: Vec<OutPoint>,
   ) -> Self {
     Self {
       utxos: amounts.keys().cloned().collect(),
@@ -140,6 +142,7 @@ impl TransactionBuilder {
       change_addresses: change.iter().cloned().collect(),
       fee_rate,
       inputs: Vec::new(),
+      force_input: force_input,
       inscriptions,
       outgoing,
       outputs: Vec::new(),
@@ -206,7 +209,7 @@ impl TransactionBuilder {
       }
     }
 
-    let amount = *self
+    let mut amount = *self
       .amounts
       .get(&self.outgoing.outpoint)
       .ok_or(Error::NotInWallet(self.outgoing))?;
@@ -217,6 +220,11 @@ impl TransactionBuilder {
 
     self.utxos.remove(&self.outgoing.outpoint);
     self.inputs.push(self.outgoing.outpoint);
+    for input in &self.force_input {
+      self.inputs.push(*input);
+      amount += *self.amounts.get(&input).unwrap();
+      self.utxos.remove(&input);
+    }
     self.outputs.push((self.recipient.clone(), amount));
 
     tprintln!(

@@ -135,6 +135,8 @@ pub(crate) struct Inscribe {
   pub(crate) dump: bool,
   #[clap(long, help = "Do not broadcast any transactions. Implies --dump.")]
   pub(crate) no_broadcast: bool,
+  #[clap(long, help = "Require this utxo to be spent. Useful for forcing CPFP.")]
+  pub(crate) force_input: Vec<OutPoint>,
 }
 
 impl Inscribe {
@@ -280,7 +282,7 @@ impl Inscribe {
       reveal_input: self.reveal_input,
       satpoint: self.satpoint,
     }
-    .inscribe(chain, &index, &client, &locked_utxos, &utxos)
+    .inscribe(chain, &index, &client, &locked_utxos, &utxos, self.force_input)
   }
 
   fn parse_metadata(cbor: Option<PathBuf>, json: Option<PathBuf>) -> Result<Option<Vec<u8>>> {

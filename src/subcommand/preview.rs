@@ -88,6 +88,7 @@ impl Preview {
             destination: None,
             dry_run: false,
             fee_rate: FeeRate::try_from(1.0).unwrap(),
+            force_input: Vec::new(),
             file: Some(file),
             json_metadata: None,
             metaprotocol: None,
