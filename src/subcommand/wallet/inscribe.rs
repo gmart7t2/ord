@@ -123,9 +123,9 @@ pub(crate) struct Inscribe {
   pub(crate) satpoint: Option<SatPoint>,
   #[clap(long, help = "Use provided recovery key instead of a random one.")]
   pub(crate) key: Option<String>,
-  #[clap(long, help = "Don't make a reveal tx; just create a commit tx that sends all the sats to a new commitment. Requires --key to be specified.")]
+  #[clap(long, help = "Don't make a reveal tx; just create a commit tx that sends all the sats to a new commitment. Either specify --key if you have one, or note the --key it generates for you. Implies --no-backup.")]
   pub(crate) commit_only: bool,
-  #[clap(long, help = "Don't make a commit transaction; just create a reveal tx that reveals the inscription committed to by output <COMMITMENT>. Requires --key to be specified.")]
+  #[clap(long, help = "Don't make a commit transaction; just create a reveal tx that reveals the inscription committed to by output <COMMITMENT>. Requires the same --key as was used to make the commitment. Implies --no-backup. This doesn't work if the --key has ever been backed up to the wallet.")]
   pub(crate) commitment: Option<OutPoint>,
   #[clap(long, help = "Make the change of the reveal tx commit to the contents of <NEXT-FILE>.")]
   pub(crate) next_file: Option<PathBuf>,
@@ -153,6 +153,11 @@ impl Inscribe {
 
     if self.commitment.is_none() && !self.reveal_input.is_empty() {
       return Err(anyhow!("--reveal-input only works with --commitment"));
+    }
+
+    let mut no_backup = self.no_backup;
+    if self.commit_only || self.commitment.is_some() {
+      no_backup = true;
     }
 
     let mut dump = self.dump;
@@ -270,7 +275,7 @@ impl Inscribe {
       key: self.key,
       mode,
       next_inscription,
-      no_backup: self.no_backup,
+      no_backup,
       no_broadcast: self.no_broadcast,
       no_limit: self.no_limit,
       parent_info,
