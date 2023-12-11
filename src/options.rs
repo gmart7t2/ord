@@ -49,6 +49,8 @@ pub(crate) struct Options {
   pub(crate) index_runes_pre_alpha_i_agree_to_get_rekt: bool,
   #[arg(long, help = "Track location of all satoshis.")]
   pub(crate) index_sats: bool,
+  #[clap(long, help = "Track transfers of inscriptions.")]
+  pub(crate) index_transfers: bool,
   #[arg(long, help = "Inhibit the display of the progress bar while updating the index.")]
   pub(crate) no_progress_bar: bool,
   #[arg(long, short, help = "Use regtest. Equivalent to `--chain regtest`.")]

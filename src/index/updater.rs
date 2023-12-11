@@ -382,7 +382,11 @@ impl<'index> Updater<'_> {
     }
 
     let mut height_to_block_hash = wtx.open_table(HEIGHT_TO_BLOCK_HASH)?;
-    let mut height_to_inscription_id = wtx.open_multimap_table(HEIGHT_TO_INSCRIPTION_ID)?;
+    let mut height_to_inscription_id = if index.index_transfers {
+      Some(wtx.open_multimap_table(HEIGHT_TO_INSCRIPTION_ID)?)
+    } else {
+      None
+    };
     let mut height_to_last_sequence_number = wtx.open_table(HEIGHT_TO_LAST_SEQUENCE_NUMBER)?;
     let mut inscription_id_to_inscription_entry =
       wtx.open_table(INSCRIPTION_ID_TO_INSCRIPTION_ENTRY)?;
