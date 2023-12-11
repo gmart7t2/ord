@@ -22,7 +22,7 @@ enum Origin {
 pub(super) struct InscriptionUpdater<'a, 'db, 'tx> {
   flotsam: Vec<Flotsam>,
   height: u64,
-  height_to_inscription_id: &'a mut MultimapTable<'db, 'tx, u64, &'static InscriptionIdValue>,
+  height_to_inscription_id: &'a mut Option<MultimapTable<'db, 'tx, u64, &'static InscriptionIdValue>>,
   id_to_satpoint: &'a mut Table<'db, 'tx, &'static InscriptionIdValue, &'static SatPointValue>,
   value_receiver: &'a mut Receiver<u64>,
   id_to_entry: &'a mut Table<'db, 'tx, &'static InscriptionIdValue, InscriptionEntryValue>,
@@ -44,7 +44,7 @@ pub(super) struct InscriptionUpdater<'a, 'db, 'tx> {
 impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
   pub(super) fn new(
     height: u64,
-    height_to_inscription_id: &'a mut MultimapTable<'db, 'tx, u64, &'static InscriptionIdValue>,
+    height_to_inscription_id: &'a mut Option<MultimapTable<'db, 'tx, u64, &'static InscriptionIdValue>>,
     id_to_satpoint: &'a mut Table<'db, 'tx, &'static InscriptionIdValue, &'static SatPointValue>,
     value_receiver: &'a mut Receiver<u64>,
     id_to_entry: &'a mut Table<'db, 'tx, &'static InscriptionIdValue, InscriptionEntryValue>,
@@ -377,9 +377,9 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
           old_satpoint,
           new_satpoint
         );
-        self
-          .height_to_inscription_id
-          .insert(&self.height, &inscription_id)?;
+        if let Some(height_to_inscription_id) = &mut self.height_to_inscription_id {
+          height_to_inscription_id.insert(&self.height, &inscription_id)?;
+        }
         self.satpoint_to_id.remove_all(&old_satpoint.store())?;
 
         false

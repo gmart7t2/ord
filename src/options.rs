@@ -50,6 +50,8 @@ pub(crate) struct Options {
   pub(crate) index: Option<PathBuf>,
   #[clap(long, help = "Track location of all satoshis.")]
   pub(crate) index_sats: bool,
+  #[clap(long, help = "Track transfers of inscriptions.")]
+  pub(crate) index_transfers: bool,
   #[clap(
     long,
     help = "Track location of all satoshis and the utxos that own them. Implies --index-sats."
