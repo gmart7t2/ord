@@ -1,31 +1,39 @@
 Changelog
 =========
 
+[0.11.1-gm6](https://github.com/gmart7t2/ord/releases/tag/0.11.1-gm6) - 2023-12-11
+----------------------------------------------------------------------------------
+
+### Added
+- Add option `--index-transfers` to have the index track which inscriptions are transferred in each block. Previously this was already enabled, using up space in the index whether it was needed or not.
+- Fix issue with the --key getting backed up to the wallet and breaking the reveal tx witnesses.
+- Add `--force-input` to `wallet inscribe` and `wallet send`.
+
 [0.11.1-gm5](https://github.com/gmart7t2/ord/releases/tag/0.11.1-gm5) - 2023-11-23
 ----------------------------------------------------------------------------------
 
 ### Added
-Add `--ignore-cursed` flag to treat all cursed inscriptions as regular inscriptions when indexing.
-Add `--ordinals-wallet` flag to `wallet restore` to help with recovering coins from an ordinalswallet seed phrase.
-Add some experimental options to allow creating just a commit tx, or just a reveal tx.
+- Add `--ignore-cursed` flag to treat all cursed inscriptions as regular inscriptions when indexing.
+- Add `--ordinals-wallet` flag to `wallet restore` to help with recovering coins from an ordinalswallet seed phrase.
+- Add some experimental options to allow creating just a commit tx, or just a reveal tx.
 
 ### Changed
-Add a max-weight check to the `wallet send-many` command.
-Fixed coin selection algorithm (#2723).
+- Add a max-weight check to the `wallet send-many` command.
+- Fixed coin selection algorithm (#2723).
 
 [0.11.1-gm4](https://github.com/gmart7t2/ord/releases/tag/0.11.1-gm4) - 2023-11-19
 ----------------------------------------------------------------------------------
 
 ### Added
-Add `--dump` and `--no-broadcast` flags to `wallet inscribe`.
-Add `wallet send-many` to allow sending multiple inscriptions in a single command.
+- Add `--dump` and `--no-broadcast` flags to `wallet inscribe`.
+- Add `wallet send-many` to allow sending multiple inscriptions in a single command.
 
 [0.11.1-gm3](https://github.com/gmart7t2/ord/releases/tag/0.11.1-gm3) - 2023-11-15
 ----------------------------------------------------------------------------------
 
 ### Added
-Add `--key` flag to `wallet inscribe` to allow using a specific recovery key.
-Add `--ignore-outdated-index` flag to allow ord to run without having to fully index the blockchain. Be careful. Inscriptions that haven't been indexed will be treated as if they are cardinals, and so can be accidentally sent to spent as fees.
+- Add `--key` flag to `wallet inscribe` to allow using a specific recovery key.
+- Add `--ignore-outdated-index` flag to allow ord to run without having to fully index the blockchain. Be careful. Inscriptions that haven't been indexed will be treated as if they are cardinals, and so can be accidentally sent to spent as fees.
 
 [0.11.1-gm2](https://github.com/gmart7t2/ord/releases/tag/0.11.1-gm2) - 2023-11-14
 ----------------------------------------------------------------------------------
