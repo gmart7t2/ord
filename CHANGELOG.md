@@ -1,52 +1,58 @@
 Changelog
 =========
 
+[0.8.2-gm8](https://github.com/gmart7t2/ord/releases/tag/0.8.2-gm8) - 2023-12-11
+--------------------------------------------------------------------------------
+
+### Added
+- Add option `--index-transfers` to have the index track which inscriptions are transferred in each block. Previously this was already enabled, using up space in the index whether it was needed or not.
+
 [0.8.2-gm7](https://github.com/gmart7t2/ord/releases/tag/0.8.2-gm7) - 2023-11-25
 --------------------------------------------------------------------------------
 
 ### Changed
-Fixed coin selection algorithm (#2723).
+- Fixed coin selection algorithm (#2723).
 
 [0.8.2-gm6](https://github.com/gmart7t2/ord/releases/tag/0.8.2-gm6) - 2023-08-31
 --------------------------------------------------------------------------------
 
 ### Added
--- Add `--wait-after-commit` flag to `wallet inscribe`. This causes the reveal transactions not to be broadcast until the commit transaction has been confirmed. Use in conjunction with `--dump` to make sure you have a copy of the reveal transactions to prevent loss of funds in the event that the ord command gets interrupted before the commit transaction confirms.
+- Add `--wait-after-commit` flag to `wallet inscribe`. This causes the reveal transactions not to be broadcast until the commit transaction has been confirmed. Use in conjunction with `--dump` to make sure you have a copy of the reveal transactions to prevent loss of funds in the event that the ord command gets interrupted before the commit transaction confirms.
 
 [0.8.2-gm5](https://github.com/gmart7t2/ord/releases/tag/0.8.2-gm5) - 2023-08-31
 --------------------------------------------------------------------------------
 
 ### Added
--- Add `--no-signature` flag to `wallet inscribe`. It leaves the reveal transaction unsigned, making it smaller, cheaper, and trivially easy to steal. Do not use!
+- Add `--no-signature` flag to `wallet inscribe`. It leaves the reveal transaction unsigned, making it smaller, cheaper, and trivially easy to steal. Do not use!
 
 [0.8.2-gm4](https://github.com/gmart7t2/ord/releases/tag/0.8.2-gm4) - 2023-08-25
 --------------------------------------------------------------------------------
 
 ### Changed
--- Fix `wallet inscriptions` so it can list multiple inscriptions on the same sat.
--- Fix help string for `wallet inscriptions --address`.
--- Add `--allow-missing-outputs` flag to allow ord to work on wallets with old outputs.
--- Create savepoint if it has been `SAVEPOINT_INTERVAL` blocks since the last one.
+- Fix `wallet inscriptions` so it can list multiple inscriptions on the same sat.
+- Fix help string for `wallet inscriptions --address`.
+- Add `--allow-missing-outputs` flag to allow ord to work on wallets with old outputs.
+- Create savepoint if it has been `SAVEPOINT_INTERVAL` blocks since the last one.
 
 [0.8.2-gm3](https://github.com/gmart7t2/ord/releases/tag/0.8.2-gm3) - 2023-08-24
 --------------------------------------------------------------------------------
 
 ### Changed
--- Fix `--single-key` when inscribing the same file multiple times.
--- Add logging to the new server endpoints.
+- Fix `--single-key` when inscribing the same file multiple times.
+- Add logging to the new server endpoints.
 
 [0.8.2-gm2](https://github.com/gmart7t2/ord/releases/tag/0.8.2-gm2) - 2023-08-23
 --------------------------------------------------------------------------------
 
 ### Changed
--- Store 4 bytes per outpoint not 3, to reduce the number of collisions.
+- Store 4 bytes per outpoint not 3, to reduce the number of collisions.
 
 [0.8.2-gm1](https://github.com/gmart7t2/ord/releases/tag/0.8.2-gm1) - 2023-08-22
 --------------------------------------------------------------------------------
 
 ### Changed
--- Merged 0.8.2 from upstream.
--- Small fix to reorg logging.
+- Merged 0.8.2 from upstream.
+- Small fix to reorg logging.
 
 [0.8.2](https://github.com/ordinals/ord/releases/tag/0.8.2) - 2023-08-17
 ---------------------------------------------------------------------
