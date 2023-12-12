@@ -1,6 +1,12 @@
 Changelog
 =========
 
+[0.11.1-gm7](https://github.com/gmart7t2/ord/releases/tag/0.11.1-gm7) - 2023-12-12
+----------------------------------------------------------------------------------
+
+### Added
+Add `--commit` flag to set how often blocks are committed to disk. Default 5000.
+
 [0.11.1-gm6](https://github.com/gmart7t2/ord/releases/tag/0.11.1-gm6) - 2023-12-11
 ----------------------------------------------------------------------------------
 
