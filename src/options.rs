@@ -69,6 +69,8 @@ pub(crate) struct Options {
   pub(crate) ignore_outdated_index: bool,
   #[arg(long, help = "Treat cursed inscriptions as regular inscriptions when indexing. Be consistent; either specify this flag every time you use a given index file or never.")]
   pub(crate) ignore_cursed: bool,
+  #[arg(long, default_value = "5000", help = "Commit changes to the index file on disk every <COMMIT> blocks.")]
+  pub(crate) commit: usize,
 }
 
 impl Options {

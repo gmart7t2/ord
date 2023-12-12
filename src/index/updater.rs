@@ -116,7 +116,8 @@ impl<'index> Updater<'_> {
 
       uncommitted += 1;
 
-      if uncommitted == 5000 {
+      if uncommitted == self.index.options.commit {
+        // eprintln!("\ncommitting after {} blocks at {}", uncommitted, self.height);
         self.commit(wtx, value_cache)?;
         value_cache = HashMap::new();
         uncommitted = 0;
