@@ -165,11 +165,7 @@ pub fn main() {
   env_logger::init();
 
   ctrlc::set_handler(move || {
-    if SHUTTING_DOWN.fetch_or(true, atomic::Ordering::Relaxed) {
-      process::exit(1);
-    }
-
-    println!("Shutting down gracefully. Press <CTRL-C> again to shutdown immediately.");
+    println!("Shutting down gracefully. Please wait. Pressing <CTRL-C> again won't do anything.");
 
     LISTENERS
       .lock()
