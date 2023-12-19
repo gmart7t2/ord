@@ -1,6 +1,12 @@
 Changelog
 =========
 
+[0.12.3-gm5](https://github.com/gmart7t2/ord/releases/tag/0.12.3-gm5) - 2023-12-19
+----------------------------------------------------------------------------------
+
+### Changed
+- Don't let the user corrupt their index by hitting control-C repeatedly.
+
 [0.12.3-gm4](https://github.com/gmart7t2/ord/releases/tag/0.12.3-gm4) - 2023-12-12
 ----------------------------------------------------------------------------------
 
