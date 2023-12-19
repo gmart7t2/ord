@@ -1,6 +1,12 @@
 Changelog
 =========
 
+[0.8.2-gm9](https://github.com/gmart7t2/ord/releases/tag/0.8.2-gm9) - 2023-12-19
+--------------------------------------------------------------------------------
+
+### Changed
+- Don't let the user corrupt their index by hitting control-C repeatedly.
+
 [0.8.2-gm8](https://github.com/gmart7t2/ord/releases/tag/0.8.2-gm8) - 2023-12-11
 --------------------------------------------------------------------------------
 
