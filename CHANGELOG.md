@@ -1,6 +1,12 @@
 Changelog
 =========
 
+[0.9.0-gm6](https://github.com/ordinals/ord/releases/tag/0.9.0-gm6) - 2023-12-19
+--------------------------------------------------------------------------------
+
+### Changed
+- Don't let the user corrupt their index by hitting control-C repeatedly.
+
 [0.9.0-gm5](https://github.com/ordinals/ord/releases/tag/0.9.0-gm5) - 2023-10-21
 --------------------------------------------------------------------------------
 
