@@ -1,75 +1,60 @@
-`xord` based on `ord`
-=====
+![photo_2023-12-29 20 46 29](https://github.com/the-moto/xord-0.13.1/assets/140389355/c27aba47-f5e3-4ec9-b1a7-a20c066263fa)
 
-`ord` is an index, block explorer, and command-line wallet. It is experimental
-software with no warranty. See [LICENSE](LICENSE) for more details.
+`xord`, an advanced iteration of `ord`, introduces a suite of powerful new features designed to streamline and enrich the experience of interacting with Ordinals and digital artifacts on the Bitcoin blockchain. Building upon the foundational capabilities of `ord`, `xord` extends functionality with innovative indexing options and enhanced query capabilities, catering to a more sophisticated and diverse range of use cases for metaprotocol operations. Below is a brief introduction to the key enhancements incorporated into `xord`:
 
-Ordinal theory imbues satoshis with numismatic value, allowing them to
-be collected and traded as curios.
+### New Indexing Flags
 
-Ordinal numbers are serial numbers for satoshis, assigned in the order in which
-they are mined, and preserved across transactions.
+`xord` elevates the indexing process with additional flags, offering users more control and specificity in tracking Ordinal transactions and inscriptions. These new flags include:
 
-See [the docs](https://docs.ordinals.com) for documentation and guides.
+- **--index-transfer-history**: Allows for the compilation of comprehensive transfer histories for individual Ordinals, providing a detailed view of their transaction journey.
 
-See [the BIP](bip.mediawiki) for a technical description of the assignment and
-transfer algorithm.
+- **--index-only-first-transfer**: Limits indexing to only the initial transfer of each Ordinal, offering a streamlined view of first ownership changes.
 
-See [the project board](https://github.com/users/casey/projects/3/) for
-currently prioritized issues.
+- **--filter-metaprotocol \<metaprotocol\>**: A specialized filter to index Ordinals based on specific metaprotocol criteria, shrinking the total size of your ord index.redb.
 
-See [milestones](https://github.com/ordinals/ord/milestones) to get a sense of
-where the project is and where it's going.
+### JSON-RPC Metaprotocol Field Query
 
-Join [the Discord server](https://discord.gg/87cjuz4FYg) to chat with fellow
-ordinal degenerates.
+`xord` introduces the ability to query the "metaprotocol" field within Ordinal envelopes through JSON-RPC requests. This feature allows users to retrieve and interact with metaprotocol-specific data, enabling deeper insights and interactions with digital assets governed by these protocols.
 
-Donate
-------
+### Default "First Inscription Height" now 820569
 
-Ordinals is open-source and community funded. The current lead maintainer of
-`ord` is [raphjaph](https://github.com/raphjaph/). Raph's work on `ord` is
-entirely funded by donations. If you can, please consider donating!
+In a significant default setting adjustment, `xord` sets the "first inscription height" to align with the first deployment of a CBRC-20 token, specifically the 'BORD' token, at block height 820569. This change is aimed at enhancing the relevance and immediacy of data for users engaging with CBRC-20 tokens, providing a more intuitive starting point for tracking and analysis.
 
-The donation address is
-[bc1qguzk63exy7h5uygg8m2tcenca094a8t464jfyvrmr0s6wkt74wls3zr5m3](https://mempool.space/address/bc1qguzk63exy7h5uygg8m2tcenca094a8t464jfyvrmr0s6wkt74wls3zr5m3).
+How to Run `xord`
+------------
 
-This address is 2 of 4 multisig wallet with keys held by
-[raphjaph](https://twitter.com/raphjaph),
-[erin](https://twitter.com/realizingerin),
-[rodarmor](https://twitter.com/rodarmor), and
-[ordinally](https://twitter.com/veryordinally).
+`xord` introduces a range of custom commands to enhance your interaction with the Bitcoin blockchain and Ordinals. Here's how to utilize these new features effectively:
 
-Bitcoin received will go towards funding maintenance and development of `ord`,
-as well as hosting costs for [ordinals.com](https://ordinals.com).
+### Example Command Breakdown
 
-Thank you for donating!
+Let's dissect an example command to understand how to use `xord`'s custom features:
 
-Wallet
-------
+```sh
+./ord --bitcoin-data-dir /Users/THEMOTO/Library/Application\ Support/Bitcoin --bitcoin-rpc-pass themoto --bitcoin-rpc-user lovesyou --data-dir /Users/THEMOTO/xord --index-only-first-transfer --filter-metaprotocol cbrc-20 server --http-port 3333 -j
+```
 
-`ord` relies on Bitcoin Core for private key management and transaction signing.
-This has a number of implications that you must understand in order to use
-`ord` wallet commands safely:
+#### 1. Bitcoin Data Directory
+`--bitcoin-data-dir /path/to/bitcoin/data`: This flag specifies the directory where your Bitcoin node data is stored. In the example, it's set to `/Users/THEMOTO/Library/Application Support/Bitcoin`.
 
-- Bitcoin Core is not aware of inscriptions and does not perform sat
-  control. Using `bitcoin-cli` commands and RPC calls with `ord` wallets may
-  lead to loss of inscriptions.
+#### 2. Bitcoin RPC Authentication
+- `--bitcoin-rpc-pass themoto`: Sets the password for Bitcoin RPC authentication.
+- `--bitcoin-rpc-user lovesyou`: Sets the username for Bitcoin RPC authentication.
 
-- `ord wallet` commands automatically load the `ord` wallet given by the
-  `--wallet` option, which defaults to 'ord'. Keep in mind that after running
-  an `ord wallet` command, an `ord` wallet may be loaded.
+#### 3. `xord` Data Directory
+`--data-dir /path/to/xord/data`: This flag sets the directory for `xord` data. Here, it's `/Users/THEMOTO/xord`.
 
-- Because `ord` has access to your Bitcoin Core wallets, `ord` should not be
-  used with wallets that contain a material amount of funds. Keep ordinal and
-  cardinal wallets segregated.
+#### 4. Indexing Flags
+- `--index-only-first-transfer`: Activates indexing for only the first transfer of each Ordinal, offering a focused view of initial ownership changes.
+- `--filter-metaprotocol cbrc-20`: Filters the indexing process to only include Ordinals that are associated with the specified metaprotocol, in this case, `cbrc-20`.
 
-### Pre-alpha wallet migration
+#### 5. Running the Server
+`server`: This command starts the `xord` server.
 
-Alpha `ord` wallets are not compatible with wallets created by previous
-versions of `ord`. To migrate, use `ord wallet send` from the old wallet to
-send sats and inscriptions to addresses generated by the new wallet with `ord
-wallet receive`.
+#### 6. HTTP Port Configuration
+`--http-port 3333`: Sets the HTTP port for the `xord` server. In this example, port 3333 is used.
+
+#### 7. JSON-RPC Activation
+`-j`: Enables JSON-RPC functionality, allowing for RPC interactions with `xord`.
 
 Installation
 ------------
@@ -130,53 +115,6 @@ To build a `.deb` package:
 cargo install cargo-deb
 cargo deb
 ```
-
-Contributing
-------------
-
-If you wish to contribute there are a couple things that are helpful to know. We
-put a lot of emphasis on proper testing in the code base, with three broad
-categories of tests: unit, integration and fuzz. Unit tests can usually be found at
-the bottom of a file in a mod block called `tests`. If you add or modify a
-function please also add a corresponding test. Integration tests try to test
-end-to-end functionality by executing a subcommand of the binary. Those can be
-found in the [tests](tests) directory. We don't have a lot of fuzzing but the
-basic structure of how we do it can be found in the [fuzz](fuzz) directory.
-
-We strongly recommend installing [just](https://github.com/casey/just) to make
-running the tests easier. To run our CI test suite you would do:
-
-```
-just ci
-```
-
-This corresponds to the commands:
-
-```
-cargo fmt -- --check
-cargo test --all
-cargo test --all -- --ignored
-```
-
-Have a look at the [justfile](justfile) to see some more helpful recipes
-(commands). Here are a couple more good ones:
-
-```
-just fmt
-just fuzz
-just doc
-just watch ltest --all
-```
-
-If the tests are failing or hanging, you might need to increase the maximum
-number of open files by running `ulimit -n 1024` in your shell before you run
-the tests, or in your shell configuration.
-
-We also try to follow a TDD (Test-Driven-Development) approach, which means we
-use tests as a way to get visibility into the code. Tests have to run fast for that
-reason so that the feedback loop between making a change, running the test and
-seeing the result is small. To facilitate that we created a mocked Bitcoin Core
-instance in [test-bitcoincore-rpc](./test-bitcoincore-rpc).
 
 Syncing
 -------
@@ -239,74 +177,3 @@ the server and show `info`-level log messages and above:
 ```
 $ RUST_LOG=info cargo run server
 ```
-
-New Releases
-------------
-
-Release commit messages use the following template:
-
-```
-Release x.y.z
-
-- Bump version: x.y.z → x.y.z
-- Update changelog
-- Update dependencies
-- Update database schema version
-```
-
-Translations
-------------
-
-To translate [the docs](https://docs.ordinals.com) we use this
-[mdBook i18n helper](https://github.com/google/mdbook-i18n-helpers).
-So read through their [usage guide](https://github.com/google/mdbook-i18n-helpers/blob/main/i18n-helpers/USAGE.md)
-to see the structure that translations should follow.
-
-There are some other things to watch out for but feel free to just start a
-translation and open a PR. Have a look at [this commit](https://github.com/ordinals/ord/commit/329f31bf6dac207dad001507dd6f18c87fdef355)
-for an idea of what to do. A maintainer will also help you integrate it into our
-build system.
-
-To align your translated version of the Handbook with reference to commit
-[#2427](https://github.com/ordinals/ord/pull/2426), here are some guiding
-commands to assist you. It is assumed that your local environment is already
-well-configured with [Python](https://www.python.org/),
-[Mdbook](https://github.com/rust-lang/mdBook),
-[mdBook i18n helper](https://github.com/google/mdbook-i18n-helpers) and that you've clone
-this repo.
-
-
-1. Run the following command to generate a new `pot` file, which is named as
-`messages.pot`:
-
-```
-MDBOOK_OUTPUT='{"xgettext": {"pot-file": "messages.pot"}}'
-mdbook build -d po
-```
-
-2. Run `msgmerge` where `xx.po` is your localized language version following
-the naming standard of [ISO639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).
-This process will update the `po` file with the most recent original version:
-
-```
-msgmerge --update po/xx.po po/messages.pot
-```
-
-3. Look for `#, fuzzy`. The `mdBook-i18n-helper` tool utilizes the `"fuzzy"` tag
-to highlight sections that have been recently edited. You can proceed to perform
-the translation tasks by editing the `"fuzzy"`part.
-
-4. Execute the `mdbook` command. A demonstration in Chinese (`zh`) is given below:
-
-```
-mdbook build docs -d build
-MDBOOK_BOOK__LANGUAGE=zh mdbook build docs -d build/zh
-mv docs/build/zh/html docs/build/html/zh
-python3 -m http.server --directory docs/build/html --bind 127.0.0.1 8080
-```
-
-5. Upon verifying everything and ensuring all is in order, you can commit the
-modifications and progress to open a Pull Request (PR) on Github.
-(**Note**: Please ensure **ONLY** the **'xx.po'** file is pushed, other files
-such as '.pot' or files ending in '~' are **unnecessary** and should **NOT** be
-included in the Pull Request.）
