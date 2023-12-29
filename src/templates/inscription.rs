@@ -30,6 +30,7 @@ pub struct InscriptionJson {
   pub genesis_height: u32,
   pub inscription_id: InscriptionId,
   pub inscription_number: i32,
+  pub metaprotocol: Option<String>,
   pub next: Option<InscriptionId>,
   pub output_value: Option<u64>,
   pub parent: Option<InscriptionId>,
