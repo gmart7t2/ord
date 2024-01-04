@@ -40,7 +40,7 @@ pub(super) struct InscriptionUpdater<'a, 'db, 'tx> {
   pub(super) blessed_inscription_count: u64,
   pub(super) chain: Chain,
   pub(super) cursed_inscription_count: u64,
-  pub(super) filter_metaprotocol: Option<String>,
+  pub(super) filter_metaprotocol: Vec<String>,
   pub(super) flotsam: Vec<Flotsam>,
   pub(super) height: u32,
   pub(super) height_to_sequence_number: &'a mut Option<MultimapTable<'db, 'tx, u32, u32>>,
