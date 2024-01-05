@@ -123,16 +123,21 @@ impl From<RawEnvelope> for ParsedEnvelope {
 }
 
 impl ParsedEnvelope {
-  pub(crate) fn from_transaction(transaction: &Transaction, filter: Option<String>) -> Vec<Self> {
+  pub(crate) fn from_transaction(transaction: &Transaction, filters: Vec<String>) -> Vec<Self> {
     RawEnvelope::from_transaction(transaction)
       .into_iter()
       .map(|envelope| envelope.into())
-      .filter(|envelope: &ParsedEnvelope| match &filter {
-        Some(filter) => match envelope.payload.metaprotocol.clone() {
-          Some(metaprotocol) => metaprotocol.to_vec().starts_with(filter.as_bytes()),
-          None => false,
+      .filter(|envelope: &ParsedEnvelope| {
+        if filters.is_empty() {
+          true // Aucun filtre spécifié, toutes les enveloppes sont incluses
+        } else {
+          match &envelope.payload.metaprotocol {
+            Some(metaprotocol) => filters
+              .iter()
+              .any(|filter| metaprotocol.to_vec().starts_with(filter.as_bytes())),
+            None => false,
+          }
         }
-        None => true,
       })
       .collect()
   }

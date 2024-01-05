@@ -18,7 +18,7 @@ impl Decode {
       Transaction::consensus_decode(&mut io::stdin())?
     };
 
-    let inscriptions = ParsedEnvelope::from_transaction(&transaction, None);
+    let inscriptions = ParsedEnvelope::from_transaction(&transaction, Vec::new());
 
     Ok(Box::new(Output {
       inscriptions: inscriptions
