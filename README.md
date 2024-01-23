@@ -30,7 +30,7 @@ How to Run `xord`
 Let's dissect an example command to understand how to use `xord`'s custom features:
 
 ```sh
-./ord --bitcoin-data-dir /Users/THEMOTO/Library/Application\ Support/Bitcoin --bitcoin-rpc-pass themoto --bitcoin-rpc-user lovesyou --data-dir /Users/THEMOTO/xord --index-only-first-transfer --filter-metaprotocol cbrc-20 --filter-metaprotocol "@" server --http-port 3333 -j
+./target/release/ord --bitcoin-rpc-user=themoto --bitcoin-rpc-pass=loveyou --index-only-first-transfer --index-transfer-history --data-dir=../xord-db --filter-metaprotocol cbrc-20 --filter-metaprotocol "@" server --http-port 3333 -j
 ```
 
 #### 1. Bitcoin Data Directory
