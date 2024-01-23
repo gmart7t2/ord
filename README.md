@@ -30,7 +30,7 @@ How to Run `xord`
 Let's dissect an example command to understand how to use `xord`'s custom features:
 
 ```sh
-./ord --bitcoin-data-dir /Users/THEMOTO/Library/Application\ Support/Bitcoin --bitcoin-rpc-pass themoto --bitcoin-rpc-user lovesyou --data-dir /Users/THEMOTO/xord --index-only-first-transfer --filter-metaprotocol cbrc-20 server --http-port 3333 -j
+./ord --bitcoin-data-dir /Users/THEMOTO/Library/Application\ Support/Bitcoin --bitcoin-rpc-pass themoto --bitcoin-rpc-user lovesyou --data-dir /Users/THEMOTO/xord --index-only-first-transfer --filter-metaprotocol cbrc-20 --filter-metaprotocol "@" server --http-port 3333 -j
 ```
 
 #### 1. Bitcoin Data Directory
@@ -45,7 +45,7 @@ Let's dissect an example command to understand how to use `xord`'s custom featur
 
 #### 4. Indexing Flags
 - `--index-only-first-transfer`: Activates indexing for only the first transfer of each Ordinal, offering a focused view of initial ownership changes.
-- `--filter-metaprotocol cbrc-20`: Filters the indexing process to only include Ordinals that are associated with the specified metaprotocol, in this case, `cbrc-20`.
+- `--filter-metaprotocol cbrc-20 --filter-metaprotocol "@"`: Filters the indexing process to only include Ordinals that are associated with the specified metaprotocol, in this case, `cbrc-20` and the addressage format `@`.
 
 #### 5. Running the Server
 `server`: This command starts the `xord` server.
