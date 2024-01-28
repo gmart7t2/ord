@@ -78,6 +78,7 @@ impl From<RawEnvelope> for ParsedEnvelope {
         metaprotocol,
         parent,
         pointer,
+        skip_pointer: false,
         unrecognized_even_field,
       },
       input: envelope.input,

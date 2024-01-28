@@ -144,6 +144,8 @@ pub(crate) struct Inscribe {
   pub(crate) commit_input: Vec<OutPoint>,
   #[arg(long, help = "Inscribe <SAT>.", conflicts_with = "satpoint")]
   pub(crate) sat: Option<Sat>,
+  #[arg(long, help = "Whether to omit pointer from the envelope of blank inscriptions.")]
+  pub(crate) skip_pointer_for_none: bool,
 }
 
 impl Inscribe {
@@ -233,6 +235,7 @@ impl Inscribe {
           self.metaprotocol.clone(),
           metadata.clone(),
           self.compress,
+          self.skip_pointer_for_none,
         )?];
         next_inscription = if self.next_file.is_some() {
           Some(Inscription::from_file(
@@ -243,6 +246,7 @@ impl Inscribe {
             self.metaprotocol,
             metadata,
             self.compress,
+            self.skip_pointer_for_none,
           )?)
         } else {
           None
@@ -274,6 +278,7 @@ impl Inscribe {
           metadata,
           postage,
           self.compress,
+          self.skip_pointer_for_none,
         )?;
         next_inscription = None;
 

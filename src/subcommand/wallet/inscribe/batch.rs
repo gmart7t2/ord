@@ -743,6 +743,7 @@ pub(crate) struct BatchEntry {
   pub(crate) file: PathBuf,
   pub(crate) metadata: Option<serde_yaml::Value>,
   pub(crate) metaprotocol: Option<String>,
+  pub(crate) pointer: Option<u64>,
 }
 
 impl BatchEntry {
@@ -788,6 +789,7 @@ impl Batchfile {
     metadata: Option<Vec<u8>>,
     postage: Amount,
     compress: bool,
+    skip_pointer_for_none: bool,
   ) -> Result<(Vec<Inscription>, Vec<Address>)> {
     assert!(!self.inscriptions.is_empty());
 
@@ -817,13 +819,17 @@ impl Batchfile {
         chain,
         &entry.file,
         self.parent,
-        if i == 0 { None } else { Some(pointer) },
+        match entry.pointer {
+          Some(pointer) => Some(pointer),
+          None => if i == 0 { None } else { Some(pointer) },
+        },
         entry.metaprotocol.clone(),
         match &metadata {
           Some(metadata) => Some(metadata.clone()),
           None => entry.metadata()?,
         },
         compress,
+        skip_pointer_for_none,
       )?);
 
       pointer += postage.to_sat();
