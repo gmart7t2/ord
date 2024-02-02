@@ -30,28 +30,28 @@ How to Run `xord`
 Let's dissect an example command to understand how to use `xord`'s custom features:
 
 ```sh
-./target/release/ord --bitcoin-rpc-user=themoto --bitcoin-rpc-pass=loveyou --index-only-first-transfer --index-transfer-history --data-dir=../xord-db --filter-metaprotocol cbrc-20 --filter-metaprotocol "@" server --http-port 3333 -j
+./ord --bitcoin-data-dir /yourpathtobitcoindata --bitcoin-rpc-pass themoto --bitcoin-rpc-user lovesyou --data-dir /yourpath/xord_test --index-only-first-transfer --filter-metaprotocol @ --filter-metaprotocol cbrc-20 server --http-port 4444 -j
 ```
 
 #### 1. Bitcoin Data Directory
-`--bitcoin-data-dir /path/to/bitcoin/data`: This flag specifies the directory where your Bitcoin node data is stored. In the example, it's set to `/Users/THEMOTO/Library/Application Support/Bitcoin`.
+`--bitcoin-data-dir /yourpathtobitcoindata`: This flag specifies the directory where your Bitcoin node data is stored. In the example, it's set to `/Users/THEMOTO/Library/Application Support/Bitcoin`.
 
 #### 2. Bitcoin RPC Authentication
 - `--bitcoin-rpc-pass themoto`: Sets the password for Bitcoin RPC authentication.
 - `--bitcoin-rpc-user lovesyou`: Sets the username for Bitcoin RPC authentication.
 
 #### 3. `xord` Data Directory
-`--data-dir /path/to/xord/data`: This flag sets the directory for `xord` data. Here, it's `/Users/THEMOTO/xord`.
+`--data-dir /yourpath/xord_test`: This flag sets the directory for `xord` data. Here, it's `/Users/THEMOTO/xord`.
 
 #### 4. Indexing Flags
 - `--index-only-first-transfer`: Activates indexing for only the first transfer of each Ordinal, offering a focused view of initial ownership changes.
-- `--filter-metaprotocol cbrc-20 --filter-metaprotocol "@"`: Filters the indexing process to only include Ordinals that are associated with the specified metaprotocol, in this case, `cbrc-20` and the addressage format `@`.
+- `--filter-metaprotocol @ --filter-metaprotocol cbrc-20`: Filters the indexing process to only include Ordinals that are associated with the specified metaprotocol, in this case, `cbrc-20` and the addressage format `@`.
 
 #### 5. Running the Server
 `server`: This command starts the `xord` server.
 
 #### 6. HTTP Port Configuration
-`--http-port 3333`: Sets the HTTP port for the `xord` server. In this example, port 3333 is used.
+`--http-port 4444`: Sets the HTTP port for the `xord` server. In this example, port 4444 is used.
 
 #### 7. JSON-RPC Activation
 `-j`: Enables JSON-RPC functionality, allowing for RPC interactions with `xord`.
