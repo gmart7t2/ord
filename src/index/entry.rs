@@ -255,6 +255,7 @@ pub(crate) struct InscriptionEntry {
   pub(crate) height: u32,
   pub(crate) id: InscriptionId,
   pub(crate) inscription_number: i32,
+  pub(crate) outpoint: OutPoint,
   pub(crate) parent: Option<u32>,
   pub(crate) sat: Option<Sat>,
   pub(crate) sequence_number: u32,
@@ -271,6 +272,8 @@ pub(crate) type InscriptionEntryValue = (
   Option<u64>,        // sat
   u32,                // sequence number
   u32,                // timestamp
+  (u128, u128),       // txid
+  u32,                // vout
 );
 
 impl Entry for InscriptionEntry {
@@ -288,6 +291,8 @@ impl Entry for InscriptionEntry {
       sat,
       sequence_number,
       timestamp,
+      txid,
+      vout,
     ): InscriptionEntryValue,
   ) -> Self {
     Self {
@@ -296,6 +301,19 @@ impl Entry for InscriptionEntry {
       height,
       id: InscriptionId::load(id),
       inscription_number,
+      outpoint: OutPoint {
+        txid: {
+          let low = txid.0.to_le_bytes();
+          let high = txid.1.to_le_bytes();
+          Txid::from_byte_array([
+            low[0], low[1], low[2], low[3], low[4], low[5], low[6], low[7], low[8], low[9], low[10],
+            low[11], low[12], low[13], low[14], low[15], high[0], high[1], high[2], high[3], high[4],
+            high[5], high[6], high[7], high[8], high[9], high[10], high[11], high[12], high[13],
+            high[14], high[15],
+          ])
+        },
+        vout,
+      },
       parent,
       sat: sat.map(Sat),
       sequence_number,
@@ -314,6 +332,20 @@ impl Entry for InscriptionEntry {
       self.sat.map(Sat::n),
       self.sequence_number,
       self.timestamp,
+      {
+        let bytes = self.outpoint.txid.to_byte_array();
+        (
+          u128::from_le_bytes([
+            bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7],
+            bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15],
+          ]),
+          u128::from_le_bytes([
+            bytes[16], bytes[17], bytes[18], bytes[19], bytes[20], bytes[21], bytes[22], bytes[23],
+            bytes[24], bytes[25], bytes[26], bytes[27], bytes[28], bytes[29], bytes[30], bytes[31],
+          ]),
+        )
+      },
+      self.outpoint.vout,
     )
   }
 }

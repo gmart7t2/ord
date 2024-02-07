@@ -1676,6 +1676,19 @@ impl Server {
       let info = Index::inscription_info(&index, query)?
         .ok_or_not_found(|| format!("inscription {query}"))?;
 
+      let genesis_outpoint = info.entry.outpoint;
+      let genesis_output = if genesis_outpoint == OutPoint::null() || genesis_outpoint == unbound_outpoint() {
+        TxOut {value: 0, script_pubkey: ScriptBuf::new()}
+      } else {
+        index
+          .get_transaction(genesis_outpoint.txid)?
+          .ok_or_not_found(|| format!("output {genesis_outpoint}"))?
+          .output
+          .into_iter()
+          .nth(genesis_outpoint.vout as usize)
+          .ok_or_not_found(|| format!("output {genesis_outpoint}"))?
+      };
+
       Ok(if accept_json {
         Json(InscriptionJson {
           inscription_id: info.entry.id,
@@ -1717,6 +1730,8 @@ impl Server {
           children: info.children,
           genesis_fee: info.entry.fee,
           genesis_height: info.entry.height,
+          genesis_outpoint,
+          genesis_output,
           inscription: info.inscription,
           inscription_id: info.entry.id,
           inscription_number: info.entry.inscription_number,
