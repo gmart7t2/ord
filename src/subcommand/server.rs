@@ -1720,6 +1720,19 @@ impl Server {
       Charm::Lost.set(&mut charms);
     }
 
+    let genesis_outpoint = entry.outpoint;
+    let genesis_output = if genesis_outpoint == OutPoint::null() || genesis_outpoint == unbound_outpoint() {
+      TxOut {value: 0, script_pubkey: ScriptBuf::new()}
+    } else {
+      index
+        .get_transaction(genesis_outpoint.txid)?
+        .ok_or_not_found(|| format!("output {genesis_outpoint}"))?
+        .output
+        .into_iter()
+        .nth(genesis_outpoint.vout as usize)
+        .ok_or_not_found(|| format!("output {genesis_outpoint}"))?
+    };
+
     Ok(if accept_json.0 {
       Json(InscriptionJson {
         inscription_id,
@@ -1756,6 +1769,8 @@ impl Server {
         children,
         genesis_fee: entry.fee,
         genesis_height: entry.height,
+        genesis_outpoint,
+        genesis_output,
         inscription,
         inscription_id,
         inscription_number: entry.inscription_number,

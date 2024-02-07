@@ -6,6 +6,8 @@ pub(crate) struct InscriptionHtml {
   pub(crate) children: Vec<InscriptionId>,
   pub(crate) genesis_fee: u64,
   pub(crate) genesis_height: u32,
+  pub(crate) genesis_outpoint: OutPoint,
+  pub(crate) genesis_output: TxOut,
   pub(crate) inscription: Inscription,
   pub(crate) inscription_id: InscriptionId,
   pub(crate) inscription_number: i32,

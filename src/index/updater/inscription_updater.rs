@@ -507,6 +507,7 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
             height: self.height,
             id: inscription_id,
             inscription_number,
+            outpoint: if unbound { unbound_outpoint() } else { new_satpoint.outpoint },
             parent,
             sat,
             sequence_number,
