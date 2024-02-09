@@ -1720,6 +1720,15 @@ impl Server {
       Charm::Lost.set(&mut charms);
     }
 
+    let genesis_first_address = server_config.chain.address_from_script(
+      &index
+        .get_transaction(inscription_id.txid)?
+        .ok_or_not_found(|| format!("inscription {inscription_id}"))?
+        .output
+        .into_iter()
+        .nth(0 as usize)
+        .ok_or_not_found(|| format!("inscription {inscription_id}"))?.script_pubkey).ok();
+
     Ok(if accept_json.0 {
       Json(InscriptionJson {
         inscription_id,
@@ -1755,6 +1764,7 @@ impl Server {
         charms,
         children,
         genesis_fee: entry.fee,
+        genesis_first_address,
         genesis_height: entry.height,
         inscription,
         inscription_id,

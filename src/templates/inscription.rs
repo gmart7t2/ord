@@ -5,6 +5,7 @@ pub(crate) struct InscriptionHtml {
   pub(crate) chain: Chain,
   pub(crate) children: Vec<InscriptionId>,
   pub(crate) genesis_fee: u64,
+  pub(crate) genesis_first_address: Option<Address>,
   pub(crate) genesis_height: u32,
   pub(crate) inscription: Inscription,
   pub(crate) inscription_id: InscriptionId,
