@@ -237,7 +237,7 @@ impl Index {
       redb::Durability::Immediate
     };
 
-    let index_runes;
+    let mut index_runes;
     let index_sats;
     let index_transactions;
 
@@ -296,8 +296,20 @@ impl Index {
           index_runes = Self::is_statistic_set(&statistics, Statistic::IndexRunes)?;
           index_sats = Self::is_statistic_set(&statistics, Statistic::IndexSats)?;
           index_transactions = Self::is_statistic_set(&statistics, Statistic::IndexTransactions)?;
-        }
 
+          // if --index-runes is on the command line, and the index doesn't have the runes index, and runes aren't active yet, add the rune index
+          if options.index_runes() && !index_runes && tx
+            .open_table(HEIGHT_TO_BLOCK_HEADER)?
+            .range(0..)?
+            .next_back()
+            .transpose()?
+            .map(|(height, _header)| height.value()).unwrap() < options.first_rune_height() {
+              index_runes = true;
+              let tx = database.begin_write()?;
+              Self::set_statistic(&mut tx.open_table(STATISTIC_TO_COUNT)?, Statistic::IndexRunes, u64::from(index_runes))?;
+              tx.commit()?;
+            }
+        }
         database
       }
       Err(DatabaseError::Storage(StorageError::Io(error)))

@@ -100,7 +100,7 @@ impl Options {
   }
 
   pub(crate) fn index_runes(&self) -> bool {
-    self.index_runes && self.chain() != Chain::Mainnet
+    self.index_runes
   }
 
   pub(crate) fn rpc_url(&self, wallet_name: Option<String>) -> String {
