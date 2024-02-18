@@ -18,6 +18,7 @@ pub(super) struct Batch {
   pub(super) parent_info: Option<ParentInfo>,
   pub(super) postage: Amount,
   pub(super) reinscribe: bool,
+  pub(super) reveal_fee: Option<Amount>,
   pub(super) reveal_fee_rate: FeeRate,
   pub(super) reveal_input: Vec<OutPoint>,
   pub(super) satpoint: Option<SatPoint>,
@@ -43,6 +44,7 @@ impl Default for Batch {
       parent_info: None,
       postage: Amount::from_sat(10_000),
       reinscribe: false,
+      reveal_fee: None,
       reveal_fee_rate: 1.0.try_into().unwrap(),
       reveal_input: Vec::new(),
       satpoint: None,
@@ -443,7 +445,7 @@ impl Batch {
       });
     }
 
-    let (_, reveal_fee) = Self::build_reveal_transaction(
+    let (_, mut reveal_fee) = Self::build_reveal_transaction(
       &control_block,
       self.reveal_fee_rate,
       reveal_inputs.clone(),
@@ -451,6 +453,14 @@ impl Batch {
       reveal_outputs.clone(),
       &reveal_script,
     );
+
+    if let Some(r) = self.reveal_fee {
+      if r < reveal_fee {
+        return Err(anyhow!("requested reveal_fee is too small; should be at least {reveal_fee}"));
+      }
+
+      reveal_fee = r;
+    }
 
     let unsigned_commit_tx = if self.commitment.is_some() {
       Transaction {

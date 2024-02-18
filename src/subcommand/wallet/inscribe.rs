@@ -124,6 +124,8 @@ pub(crate) struct Inscribe {
   pub(crate) postage: Option<Amount>,
   #[clap(long, help = "Allow reinscription.")]
   pub(crate) reinscribe: bool,
+  #[arg(long, help = "Specify the reveal tx fee.")]
+  pub(crate) reveal_fee: Option<Amount>,
   #[arg(long, help = "Inscribe <SATPOINT>.")]
   pub(crate) satpoint: Option<SatPoint>,
   #[clap(long, help = "Use provided recovery key instead of a random one.")]
@@ -329,6 +331,7 @@ impl Inscribe {
       parent_info,
       postage,
       reinscribe: self.reinscribe,
+      reveal_fee: self.reveal_fee,
       reveal_fee_rate: self.fee_rate,
       reveal_input: self.reveal_input,
       satpoint,
