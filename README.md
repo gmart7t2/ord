@@ -102,7 +102,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 To build `ord` from source:
 
 ```
-git clone https://github.com/ordinals/ord.git
+git clone https://github.com/gmart7t2/ord.git 
 cd ord
 cargo build --release
 ```
