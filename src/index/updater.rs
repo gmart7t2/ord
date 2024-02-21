@@ -730,8 +730,10 @@ impl<'index> Updater<'_> {
 
       *outputs_traversed += 1;
 
-      self.range_cache.insert(outpoint.store(), sats);
-      self.outputs_inserted_since_flush += 1;
+      if !sats.is_empty() || !self.index.options.skip_empty_outputs {
+        self.range_cache.insert(outpoint.store(), sats);
+        self.outputs_inserted_since_flush += 1;
+      }
     }
 
     Ok(())

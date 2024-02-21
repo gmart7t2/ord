@@ -72,6 +72,8 @@ pub struct Options {
   pub(crate) signet: bool,
   #[arg(long, short, help = "Use testnet. Equivalent to `--chain testnet`.")]
   pub(crate) testnet: bool,
+  #[arg(long, help = "Don't index any zero-sat outputs. This is new and experimental and may break your index file.")]
+  pub(crate) skip_empty_outputs: bool,
   #[arg(long, help = "Don't check for standard wallet descriptors.")]
   pub(crate) ignore_descriptors: bool,
   #[arg(long, help = "Don't fail when the index is out of date. This is dangerous, and results in ord treating inscriptions as cardinals if their corresponding utxos haven't been indexed. Use at your own risk.")]
