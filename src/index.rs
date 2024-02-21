@@ -1543,6 +1543,10 @@ impl Index {
     )
   }
 
+  pub(crate) fn get_outpoint_value(&self, outpoint: &OutPoint) -> Result<u64> {
+    Ok(self.get_transaction(outpoint.txid)?.unwrap().output[outpoint.vout as usize].value)
+  }
+
   pub(crate) fn get_transaction(&self, txid: Txid) -> Result<Option<Transaction>> {
     if txid == self.genesis_block_coinbase_txid {
       return Ok(Some(self.genesis_block_coinbase_transaction.clone()));
