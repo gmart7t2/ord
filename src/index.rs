@@ -1,8 +1,8 @@
 use {
   self::{
     entry::{
-      Entry, HeaderValue, InscriptionEntry, InscriptionEntryValue, InscriptionIdValue,
-      OutPointValue, RuneEntryValue, RuneIdValue, SatPointValue, SatRange, TxidValue,
+      outpoint_prefix_end, Entry, HeaderValue, InscriptionEntry, InscriptionEntryValue, InscriptionIdValue,
+      OutPointPrefix, OutPointPrefixValue, OutPointValue, RuneEntryValue, RuneIdValue, SatPointValue, SatRange, TxidValue,
     },
     reorg::*,
     runes::{Rune, RuneId},
@@ -14,7 +14,7 @@ use {
     templates::StatusHtml,
   },
   bitcoin::block::Header,
-  bitcoincore_rpc::{json::GetBlockHeaderResult, Client},
+  bitcoincore_rpc::{json::{GetBlockHeaderResult, GetRawTransactionResult}, Client},
   chrono::SubsecRound,
   indicatif::{ProgressBar, ProgressStyle},
   log::log_enabled,
@@ -67,6 +67,7 @@ define_table! { INSCRIPTION_ID_TO_SEQUENCE_NUMBER, InscriptionIdValue, u32 }
 define_table! { INSCRIPTION_NUMBER_TO_SEQUENCE_NUMBER, i32, u32 }
 define_table! { OUTPOINT_TO_RUNE_BALANCES, &OutPointValue, &[u8] }
 define_table! { OUTPOINT_TO_SAT_RANGES, &OutPointValue, &[u8] }
+define_table! { SAT_TO_OUTPOINT, u64, &OutPointPrefixValue }
 define_table! { OUTPOINT_TO_VALUE, &OutPointValue, u64}
 define_table! { RUNE_ID_TO_RUNE_ENTRY, RuneIdValue, RuneEntryValue }
 define_table! { RUNE_TO_RUNE_ID, u128, RuneIdValue }
@@ -100,6 +101,7 @@ pub(crate) enum Statistic {
   SatRanges = 10,
   UnboundInscriptions = 11,
   IndexTransactions = 12,
+  IndexUtxos = 13,
 }
 
 impl Statistic {
@@ -200,6 +202,7 @@ pub struct Index {
   index_sats: bool,
   index_transactions: bool,
   index_transfers: bool,
+  index_utxos: bool,
   no_progress_bar: bool,
   options: Options,
   path: PathBuf,
@@ -243,6 +246,7 @@ impl Index {
     let mut index_runes;
     let index_sats;
     let index_transactions;
+    let index_utxos;
 
     let index_path = path.clone();
     let once = Once::new();
@@ -298,6 +302,7 @@ impl Index {
 
           index_runes = Self::is_statistic_set(&statistics, Statistic::IndexRunes)?;
           index_sats = Self::is_statistic_set(&statistics, Statistic::IndexSats)?;
+          index_utxos = Self::is_statistic_set(&statistics, Statistic::IndexUtxos)?;
           index_transactions = Self::is_statistic_set(&statistics, Statistic::IndexTransactions)?;
 
           // if --index-runes is on the command line, and the index doesn't have the runes index, and runes aren't active yet, add the rune index
@@ -348,18 +353,24 @@ impl Index {
 
         {
           let mut outpoint_to_sat_ranges = tx.open_table(OUTPOINT_TO_SAT_RANGES)?;
+          let mut sat_to_outpoint = tx.open_table(SAT_TO_OUTPOINT)?;
           let mut statistics = tx.open_table(STATISTIC_TO_COUNT)?;
 
-          if options.index_sats {
+          if options.index_sats || options.index_utxos {
             outpoint_to_sat_ranges.insert(&OutPoint::null().store(), [].as_slice())?;
+            if options.index_utxos {
+              sat_to_outpoint.insert(0, &OutPoint::null().store().store())?;
+            }
           }
 
           index_runes = options.index_runes();
-          index_sats = options.index_sats;
+          index_sats = options.index_sats || options.index_utxos;
           index_transactions = options.index_transactions;
+          index_utxos = options.index_utxos;
 
           Self::set_statistic(&mut statistics, Statistic::IndexRunes, u64::from(index_runes))?;
           Self::set_statistic(&mut statistics, Statistic::IndexSats, u64::from(index_sats))?;
+          Self::set_statistic(&mut statistics, Statistic::IndexUtxos, u64::from(index_utxos))?;
           Self::set_statistic(&mut statistics, Statistic::IndexTransactions, u64::from(index_transactions))?;
           Self::set_statistic(&mut statistics, Statistic::Schema, SCHEMA_VERSION)?;
         }
@@ -388,6 +399,7 @@ impl Index {
       index_sats,
       index_transactions,
       index_transfers,
+      index_utxos,
       no_progress_bar: options.no_progress_bar,
       options: options.clone(),
       path,
@@ -427,6 +439,10 @@ impl Index {
 
   pub(crate) fn has_sat_index(&self) -> bool {
     self.index_sats
+  }
+
+  pub(crate) fn has_utxo_index(&self) -> bool {
+    self.index_utxos
   }
 
   pub(crate) fn status(&self) -> Result<StatusHtml> {
@@ -473,6 +489,7 @@ impl Index {
       transaction_index: statistic(Statistic::IndexTransactions)? != 0,
       unrecoverably_reorged: self.unrecoverably_reorged.load(atomic::Ordering::Relaxed),
       uptime: (Utc::now() - self.started).to_std()?,
+      utxo_index: statistic(Statistic::IndexUtxos)? != 0,
     })
   }
 
@@ -574,6 +591,7 @@ impl Index {
     );
     insert_table_info(&mut tables, &wtx, total_bytes, OUTPOINT_TO_RUNE_BALANCES);
     insert_table_info(&mut tables, &wtx, total_bytes, OUTPOINT_TO_SAT_RANGES);
+    insert_table_info(&mut tables, &wtx, total_bytes, SAT_TO_OUTPOINT);
     insert_table_info(&mut tables, &wtx, total_bytes, OUTPOINT_TO_VALUE);
     insert_table_info(&mut tables, &wtx, total_bytes, RUNE_ID_TO_RUNE_ENTRY);
     insert_table_info(&mut tables, &wtx, total_bytes, RUNE_TO_RUNE_ID);
@@ -1544,6 +1562,20 @@ impl Index {
     self.client.get_raw_transaction(&txid, None).into_option()
   }
 
+  pub(crate) fn get_transaction_info(
+    &self,
+    txid: Txid,
+  ) -> Result<GetRawTransactionResult, bitcoincore_rpc::Error> {
+    self.client.get_raw_transaction_info(&txid, None)
+  }
+
+  pub(crate) fn get_block_height(
+    &self,
+    blockhash: bitcoin::BlockHash,
+  ) -> Result<usize, bitcoincore_rpc::Error> {
+    Ok(self.client.get_block_header_info(&blockhash)?.height)
+  }
+
   pub(crate) fn get_transaction_blockhash(&self, txid: Txid) -> Result<Option<BlockHash>> {
     Ok(
       self
@@ -1572,81 +1604,202 @@ impl Index {
   }
 
   pub(crate) fn find(&self, sat: Sat) -> Result<Option<SatPoint>> {
-    let sat = sat.0;
-    let rtx = self.begin_read()?;
-
-    if rtx.block_count()? <= Sat(sat).height().n() {
-      return Ok(None);
+    let sats = Self::find_range(self, sat, sat + 1, &Vec::new(), false)?;
+    match sats {
+      None => Ok(None),
+      Some(sats) => Ok(Some(sats[0].satpoint)),
     }
-
-    let outpoint_to_sat_ranges = rtx.0.open_table(OUTPOINT_TO_SAT_RANGES)?;
-
-    for range in outpoint_to_sat_ranges.range::<&[u8; 36]>(&[0; 36]..)? {
-      let (key, value) = range?;
-      let mut offset = 0;
-      for chunk in value.value().chunks_exact(11) {
-        let (start, end) = SatRange::load(chunk.try_into().unwrap());
-        if start <= sat && sat < end {
-          return Ok(Some(SatPoint {
-            outpoint: Entry::load(*key.value()),
-            offset: offset + sat - start,
-          }));
-        }
-        offset += end - start;
-      }
-    }
-
-    Ok(None)
   }
 
   pub(crate) fn find_range(
     &self,
-    range_start: Sat,
-    range_end: Sat,
+    search_start: Sat,
+    search_end: Sat,
+    outpoints: &Vec<OutPoint>,
+    allow_bad_ranges: bool,
   ) -> Result<Option<Vec<FindRangeOutput>>> {
-    let range_start = range_start.0;
-    let range_end = range_end.0;
+    let search_start = search_start.0;
+    let search_end = search_end.0;
+
     let rtx = self.begin_read()?;
 
-    if rtx.block_count()? < Sat(range_end - 1).height().n() + 1 {
+    if !allow_bad_ranges && rtx.block_count()? <= Sat(search_end - 1).height().n() {
       return Ok(None);
     }
 
-    let Some(mut remaining_sats) = range_end.checked_sub(range_start) else {
-      return Err(anyhow!("range end is before range start"));
-    };
-
-    let outpoint_to_sat_ranges = rtx.0.open_table(OUTPOINT_TO_SAT_RANGES)?;
-
     let mut result = Vec::new();
-    for range in outpoint_to_sat_ranges.range::<&[u8; 36]>(&[0; 36]..)? {
-      let (outpoint_entry, sat_ranges_entry) = range?;
+    if outpoints.is_empty() {
+      // no outpoints provided; search the whole space
+      let mut remaining_sats = search_end - search_start;
+      let outpoint_to_sat_ranges = rtx.0.open_table(OUTPOINT_TO_SAT_RANGES)?;
 
-      let mut offset = 0;
-      for sat_range in sat_ranges_entry.value().chunks_exact(11) {
-        let (start, end) = SatRange::load(sat_range.try_into().unwrap());
+      if self.has_utxo_index() {
+        let sat_to_outpoint = rtx.0.open_table(SAT_TO_OUTPOINT)?;
 
-        if end > range_start && start < range_end {
-          let overlap_start = start.max(range_start);
-          let overlap_end = end.min(range_end);
+        // loop through all the sats backwards from the end of the search range
+        'outer: for range in sat_to_outpoint.range::<u64>(0..search_end)?.rev() {
+          let (sat, value) = range?;
+          let sat = sat.value();
+          let value = *value.value();
+          let first_outpoint = OutPointPrefix::load(value);
+          let last_outpoint = outpoint_prefix_end(value);
+          tprintln!("| sat {sat} value {:02x?}", value);
 
-          result.push(FindRangeOutput {
-            start: overlap_start,
-            size: overlap_end - overlap_start,
-            satpoint: SatPoint {
-              outpoint: Entry::load(*outpoint_entry.value()),
-              offset: offset + overlap_start - start,
-            },
-          });
+          let mut found = false;
+          let mut output_count = 1;
 
-          remaining_sats -= overlap_end - overlap_start;
+          // loop through all the outputs that match the 2 bytes we looked up
+          'inner: for range in
+            outpoint_to_sat_ranges.range::<&[u8; 36]>(&first_outpoint..=&last_outpoint)?
+          {
+            let (key, value) = range?;
+            let mut offset = 0;
+            tprintln!(
+              "| | found output {output_count}: {:?}",
+              <OutPoint as Entry>::load(*key.value())
+            );
 
-          if remaining_sats == 0 {
-            break;
+            // loop through the ranges in the output
+            for chunk in value.value().chunks_exact(11) {
+              let (start, end) = SatRange::load(chunk.try_into().unwrap());
+
+              tprintln!("| | | found range in output: {} - {}", start, end);
+
+              // our range will start with the key we found in SAT_TO_OUTPOINT
+              if start == sat {
+                tprintln!("| | | this is our range - in output number {output_count}");
+                if start < search_end && search_start < end {
+                  let overlap_start = cmp::max(start, search_start);
+                  let overlap_end = cmp::min(search_end, end);
+                  tprintln!(
+                    "| | | it overlaps from {} to {}",
+                    overlap_start,
+                    overlap_end
+                  );
+                  result.push(FindRangeOutput {
+                    start: overlap_start,
+                    size: overlap_end - overlap_start,
+                    satpoint: SatPoint {
+                      outpoint: Entry::load(*key.value()),
+                      offset: offset + overlap_start - start,
+                    },
+                  });
+
+                  remaining_sats -= overlap_end - overlap_start;
+                  tprintln!(
+                    "| | | remaining down by {} to {}",
+                    overlap_end - overlap_start,
+                    remaining_sats
+                  );
+
+                  // we found all the sats. we don't need to look at any other outputs at all
+                  if remaining_sats == 0 {
+                    tprintln!("| | | should break 'outer;");
+                    break 'outer;
+                  }
+                } else if allow_bad_ranges {
+                  // we shouldn't get here unless we know we aren't going to find all the sats because they don't all exist yet
+                  tprintln!("no overlap found - this would usually be a panic, but continuing because --ignore");
+                  break 'outer;
+                } else {
+                  panic!("no overlap");
+                }
+
+                // we found our range. we don't need to look at the other outputs with the same 2 byte start
+                found = true;
+                break 'inner;
+              } else {
+                tprintln!("| | | not our range");
+              }
+
+              tprintln!(
+                "| | | offset up {} from {} to {}",
+                end - start,
+                offset,
+                offset + end - start
+              );
+              offset += end - start;
+            } // loop 3 - for each range in the output
+
+            tprintln!("| | that's it for this output - try the next output");
+            output_count += 1;
+          } // loop 2 ('inner) - for each output that fits the pattern
+
+          if !found {
+            panic!("no matching output for sat {sat}");
+          }
+
+          tprintln!("| finished with sat {sat}");
+        } // loop 1 ('outer) - for each start sat and 2 byte pattern
+        tprintln!("that's all the sats");
+
+        if !allow_bad_ranges && remaining_sats != 0 {
+          panic!("didn't find all the sats");
+        }
+
+        result.reverse();
+      } else {
+        // no utxo index - scan the whole OUTPOINT_TO_SAT_RANGES table
+        for range in outpoint_to_sat_ranges.range::<&[u8; 36]>(&[0; 36]..)? {
+          let (key, value) = range?;
+          let mut offset = 0;
+          for chunk in value.value().chunks_exact(11) {
+            let (start, end) = SatRange::load(chunk.try_into().unwrap());
+            if start < search_end && search_start < end {
+              let overlap_start = cmp::max(start, search_start);
+              let overlap_end = cmp::min(search_end, end);
+              result.push(FindRangeOutput {
+                start: overlap_start,
+                size: overlap_end - overlap_start,
+                satpoint: SatPoint {
+                  outpoint: Entry::load(*key.value()),
+                  offset: offset + overlap_start - start,
+                },
+              });
+
+              remaining_sats -= overlap_end - overlap_start;
+              if remaining_sats == 0 {
+                break;
+              }
+            }
+            offset += end - start;
           }
         }
-        offset += end - start;
       }
+    } else {
+      // outpoints provided; only search the outpoints
+      let mut result_map = BTreeMap::new();
+
+      for outpoint in outpoints {
+        match self.list(*outpoint)? {
+          Some(crate::index::List::Unspent(ranges)) => {
+            let mut offset = 0;
+            for (start, end) in ranges {
+              if start < search_end && search_start < end {
+                let overlap_start = cmp::max(start, search_start);
+                let overlap_end = cmp::min(search_end, end);
+                result_map.insert(
+                  overlap_start,
+                  FindRangeOutput {
+                    start: overlap_start,
+                    size: overlap_end - overlap_start,
+                    satpoint: SatPoint {
+                      outpoint: *outpoint,
+                      offset: offset + overlap_start - start,
+                    },
+                  },
+                );
+              }
+              offset += end - start;
+            }
+            Ok::<(), Error>(())
+          }
+          Some(crate::index::List::Spent) => Err(anyhow!("output spent.")),
+          None => Err(anyhow!("output not found")),
+        }?;
+      }
+
+      result = result_map.into_values().collect();
     }
 
     Ok(Some(result))

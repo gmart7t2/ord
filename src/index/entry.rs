@@ -376,6 +376,31 @@ impl Entry for InscriptionId {
   }
 }
 
+pub const PREFIX_BYTES: usize = 4;
+pub const OUTPOINT_BYTES: usize = 32 + 4;
+pub type OutPointPrefix = [u8; OUTPOINT_BYTES];
+pub(super) type OutPointPrefixValue = [u8; PREFIX_BYTES];
+
+pub fn outpoint_prefix_end(value: OutPointPrefixValue) -> OutPointPrefix {
+  let mut value = value.to_vec();
+  value.append(&mut [255; OUTPOINT_BYTES - PREFIX_BYTES].to_vec());
+  value.try_into().unwrap()
+}
+
+impl Entry for OutPointPrefix {
+  type Value = OutPointPrefixValue;
+
+  fn load(value: Self::Value) -> Self {
+    let mut value = value.to_vec();
+    value.append(&mut [0; OUTPOINT_BYTES - PREFIX_BYTES].to_vec());
+    value.try_into().unwrap()
+  }
+
+  fn store(self) -> Self::Value {
+    self[..PREFIX_BYTES].try_into().unwrap()
+  }
+}
+
 pub(super) type OutPointValue = [u8; 36];
 
 impl Entry for OutPoint {

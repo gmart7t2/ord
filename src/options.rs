@@ -49,7 +49,9 @@ pub struct Options {
   pub(crate) index_runes: bool,
   #[arg(long, help = "Track location of all satoshis.")]
   pub(crate) index_sats: bool,
-  #[clap(long, help = "Index which inscriptions are transferred in each block.")]
+  #[arg(long, help = "Track location of all satoshis and the utxos that own them. Implies --index-sats.")]
+  pub(crate) index_utxos: bool,
+  #[arg(long, help = "Index which inscriptions are transferred in each block.")]
   pub(crate) index_transfers: bool,
   #[arg(long, help = "Store transactions in index.")]
   pub(crate) index_transactions: bool,

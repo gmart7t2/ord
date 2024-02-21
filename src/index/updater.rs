@@ -480,6 +480,11 @@ impl<'index> Updater<'_> {
     if self.index.index_sats {
       let mut sat_to_satpoint = wtx.open_table(SAT_TO_SATPOINT)?;
       let mut outpoint_to_sat_ranges = wtx.open_table(OUTPOINT_TO_SAT_RANGES)?;
+      let mut sat_to_outpoint = if self.index.index_utxos {
+        wtx.open_table(SAT_TO_OUTPOINT).ok()
+      } else {
+        None
+      };
 
       let mut coinbase_inputs = VecDeque::new();
 
@@ -558,6 +563,10 @@ impl<'index> Updater<'_> {
               }
               .store(),
             )?;
+          }
+
+          if let Some(sat_to_outpoint) = sat_to_outpoint.as_mut() {
+            sat_to_outpoint.insert(&start, &OutPoint::null().store().store())?;
           }
 
           lost_sat_ranges.extend_from_slice(&(start, end).store());
@@ -746,6 +755,11 @@ impl<'index> Updater<'_> {
       );
 
       let mut outpoint_to_sat_ranges = wtx.open_table(OUTPOINT_TO_SAT_RANGES)?;
+      let mut sat_to_outpoint = if self.index.index_utxos {
+        wtx.open_table(SAT_TO_OUTPOINT).ok()
+      } else {
+        None
+      };
 
       let progress_bar = if use_progress_bar {
         let progress_bar = ProgressBar::new(self.range_cache.len() as u64);
@@ -760,6 +774,16 @@ impl<'index> Updater<'_> {
 
       for (outpoint, sat_range) in self.range_cache.drain() {
         outpoint_to_sat_ranges.insert(&outpoint, sat_range.as_slice())?;
+
+        if let Some(sat_to_outpoint) = sat_to_outpoint.as_mut() {
+          for chunk in sat_range.as_slice().chunks_exact(11) {
+            sat_to_outpoint.insert(
+              &SatRange::load(chunk.try_into().unwrap()).0,
+              &outpoint.store(),
+            )?;
+          }
+        }
+
         if let Some(progress_bar) = &progress_bar {
           progress_bar.inc(1);
         }
