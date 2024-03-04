@@ -15,6 +15,11 @@ use {
 
 #[derive(Debug, Parser, Clone)]
 pub(crate) struct SendMany {
+  #[arg(
+    long,
+    help = "Consider spending outpoint <UTXO>, even if it is unconfirmed or contains inscriptions"
+  )]
+  utxo: Vec<OutPoint>,
   #[arg(long, help = "Use fee rate of <FEE_RATE> sats/vB")]
   fee_rate: FeeRate,
   #[arg(long, help = "Location of a CSV file containing `inscriptionid`,`destination` pairs.")]
@@ -93,8 +98,17 @@ impl SendMany {
     index.update()?;
 
     let client = bitcoin_rpc_client_for_wallet_command(wallet, &options)?;
-    let unspent_outputs = get_unspent_outputs(&client, &index)?;
+    let mut unspent_outputs = get_unspent_outputs(&client, &index)?;
     let locked_outputs = get_locked_outputs(&client)?;
+
+    for outpoint in &self.utxo {
+      unspent_outputs.insert(
+        *outpoint,
+        Amount::from_sat(
+          client.get_raw_transaction(&outpoint.txid, None)?.output[outpoint.vout as usize].value,
+        ),
+      );
+    }
 
     // we get a vector of (SatPoint, InscriptionId), and turn it into a map <InscriptionId> -> <SatPoint>
     let mut inscriptions = BTreeMap::new();
