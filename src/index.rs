@@ -1303,6 +1303,29 @@ impl Index {
     Ok(ids)
   }
 
+  pub(crate) fn get_inscription_ids_by_sat_range(&self, start: Sat, end: Sat) -> Result<Vec<(Sat, InscriptionId)>> {
+    let rtx = self.database.begin_read()?;
+
+    let sequence_number_to_inscription_entry =
+      rtx.open_table(SEQUENCE_NUMBER_TO_INSCRIPTION_ENTRY)?;
+
+    let mut ids = Vec::new();
+
+    for range in rtx
+      .open_multimap_table(SAT_TO_SEQUENCE_NUMBER)?
+      .range(start.n()..end.n())? {
+        let (sat, seqs) = range?;
+        let sat = sat.value();
+        for seq in seqs {
+          ids.push((Sat(sat), sequence_number_to_inscription_entry
+                    .get(seq?.value())
+                    .map(|entry| InscriptionEntry::load(entry.unwrap().value()).id)?));
+        }
+      }
+
+    Ok(ids)
+  }
+
   pub(crate) fn get_inscription_ids_by_sat_paginated(
     &self,
     sat: Sat,
