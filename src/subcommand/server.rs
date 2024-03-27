@@ -24,7 +24,7 @@ use {
     headers::UserAgent,
     http::{header, HeaderMap, HeaderValue, StatusCode, Uri},
     response::{IntoResponse, Redirect, Response},
-    routing::get,
+    routing::{get, post},
     Router, TypedHeader,
   },
   axum_server::Handle,
@@ -239,6 +239,7 @@ impl Server {
           get(Self::inscriptions_in_block_paginated),
         )
         .route("/install.sh", get(Self::install_script))
+        .route("/locations", post(Self::locations))
         .route("/ordinal/:sat", get(Self::ordinal))
         .route("/output/:output", get(Self::output))
         .route("/preview/:inscription_id", get(Self::preview))
@@ -705,6 +706,41 @@ impl Server {
 
   async fn install_script() -> Redirect {
     Redirect::to("https://raw.githubusercontent.com/ordinals/ord/master/install.sh")
+  }
+
+  async fn locations(
+    Extension(_server_config): Extension<Arc<ServerConfig>>,
+    Extension(index): Extension<Arc<Index>>,
+    Json(data): Json<serde_json::Value>
+  ) -> ServerResult<Response> {
+    task::block_in_place(|| {
+      log::info!("POST /locations");
+
+      if !data.is_array() {
+        return Err(ServerError::BadRequest("expected array".to_string()));
+      }
+
+      let mut result = Vec::new();
+
+      for inscriptionid in data.as_array().unwrap() {
+        if !inscriptionid.is_string() {
+          return Err(ServerError::BadRequest("expected array of strings".to_string()));
+        }
+
+        match InscriptionId::from_str(inscriptionid.as_str().unwrap()) {
+          Ok(inscriptionid) => {
+            eprintln!("location of {inscriptionid}");
+            result.push(match index.get_inscription_satpoint_by_id(inscriptionid)? {
+              Some(satpoint) => satpoint,
+              _ => return Err(ServerError::BadRequest(format!("can't find inscription {inscriptionid}"))),
+            });
+          }
+          _ => return Err(ServerError::BadRequest(format!("expected array of InscriptionId strings ({} is bad)", inscriptionid))),
+        }
+      }
+
+      Ok(Json(result).into_response())
+    })
   }
 
   async fn block(
