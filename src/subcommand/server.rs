@@ -669,12 +669,24 @@ impl Server {
 
       let mintable = entry.mintable((block_height.n() + 1).into()).is_ok();
 
+      let runestone = Runestone {
+        mint: Some(id),
+        ..default()
+      };
+
+      let script_pubkey = if mintable {
+        Some(runestone.encipher())
+      } else {
+        None
+      };
+
       Ok(if accept_json {
         Json(api::Rune {
           entry,
           id,
           mintable,
           parent,
+          script_pubkey,
         })
         .into_response()
       } else {
@@ -683,6 +695,7 @@ impl Server {
           id,
           mintable,
           parent,
+          script_pubkey,
         }
         .page(server_config)
         .into_response()

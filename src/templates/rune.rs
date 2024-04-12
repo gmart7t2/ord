@@ -6,6 +6,7 @@ pub struct RuneHtml {
   pub id: RuneId,
   pub mintable: bool,
   pub parent: Option<InscriptionId>,
+  pub script_pubkey: Option<ScriptBuf>,
 }
 
 impl PageContent for RuneHtml {
