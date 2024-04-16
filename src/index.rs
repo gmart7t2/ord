@@ -1,8 +1,9 @@
 use {
+  self::wizardz::Element,
   self::{
     entry::{
       Entry, HeaderValue, InscriptionEntry, InscriptionEntryValue, InscriptionIdValue,
-      OutPointValue, RuneEntryValue, RuneIdValue, SatPointValue, SatRange, TxidValue,
+      OutPointValue, RuneEntryValue, RuneIdValue, SatPointValue, SatRange, TxidValue, WizardStats, WizardStatsValue,
     },
     reorg::*,
     runes::{Rune, RuneId},
@@ -20,7 +21,7 @@ use {
   log::log_enabled,
   redb::{
     Database, DatabaseError, MultimapTable, MultimapTableDefinition, MultimapTableHandle,
-    ReadOnlyTable, ReadableMultimapTable, ReadableTable, RedbKey, RedbValue, RepairSession,
+    ReadOnlyTable, ReadableMultimapTable, ReadableTable, ReadOnlyMultimapTable, RedbKey, RedbValue, RepairSession,
     StorageError, Table, TableDefinition, TableHandle, WriteTransaction,
   },
   std::{
@@ -56,10 +57,16 @@ macro_rules! define_multimap_table {
   };
 }
 
+define_multimap_table! { LB_BALANCE_TO_ADDRESS, u64, &[u8] }
+define_multimap_table! { LB_EARNING_TO_ADDRESS, u64, &[u8] }
+define_multimap_table! { LB_ELEMENT_TO_ADDRESS, u64, &[u8] }
+define_multimap_table! { LB_POTENTIAL_TO_ADDRESS, u64, &[u8] }
 define_multimap_table! { SATPOINT_TO_SEQUENCE_NUMBER, &SatPointValue, u32 }
 define_multimap_table! { SAT_TO_SEQUENCE_NUMBER, u64, u32 }
 define_multimap_table! { SEQUENCE_NUMBER_TO_CHILDREN, u32, u32 }
 define_multimap_table! { HEIGHT_TO_SEQUENCE_NUMBER, u32, u32 }
+define_table! { ADDRESS_TO_BALANCE, &[u8], f64 }
+define_table! { ADDRESS_TO_STATS, &[u8], WizardStatsValue }
 define_table! { HEIGHT_TO_BLOCK_HEADER, u32, &HeaderValue }
 define_table! { HEIGHT_TO_LAST_SEQUENCE_NUMBER, u32, u32 }
 define_table! { HOME_INSCRIPTIONS, u32, InscriptionIdValue }
@@ -71,6 +78,7 @@ define_table! { OUTPOINT_TO_VALUE, &OutPointValue, u64}
 define_table! { RUNE_ID_TO_RUNE_ENTRY, RuneIdValue, RuneEntryValue }
 define_table! { RUNE_TO_RUNE_ID, u128, RuneIdValue }
 define_table! { SAT_TO_SATPOINT, u64, &SatPointValue }
+define_table! { SEQUENCE_NUMBER_TO_ADDRESS, u32, &[u8] }
 define_table! { SEQUENCE_NUMBER_TO_INSCRIPTION_ENTRY, u32, InscriptionEntryValue }
 define_table! { SEQUENCE_NUMBER_TO_RUNE_ID, u32, RuneIdValue }
 define_table! { SEQUENCE_NUMBER_TO_SATPOINT, u32, &SatPointValue }
@@ -100,6 +108,18 @@ pub(crate) enum Statistic {
   SatRanges = 10,
   UnboundInscriptions = 11,
   IndexTransactions = 12,
+  WizAllocated = 13,
+  WizRemaining = 14,
+  WizFundedAddresses = 15,
+  WizAlchemists = 16,
+  WizWizards = 17,
+  WizElement0 = 18,
+  WizElement1 = 19,
+  WizElement2 = 20,
+  WizElement3 = 21,
+  WizElement4 = 22,
+  WizElement5 = 23,
+  WizHolders = 24,
 }
 
 impl Statistic {
@@ -163,6 +183,16 @@ pub(crate) struct InscriptionInfo {
   pub(crate) next: Option<InscriptionId>,
   pub(crate) rune: Option<SpacedRune>,
   pub(crate) charms: u16,
+}
+
+#[derive(Serialize)]
+pub(crate) struct LeaderboardRow {
+  pub(crate) position: u32,
+  pub(crate) address: String,
+  pub(crate) amount: f64,
+  pub(crate) wizards: u16,
+  pub(crate) full_sets: u16,
+  pub(crate) elements: IndexMap<Element, u16>,
 }
 
 trait BitcoinCoreRpcResultExt<T> {
@@ -272,6 +302,20 @@ impl Index {
     {
       Ok(database) => {
         {
+          {
+            // make sure these new tables exist
+            let mut tx = database.begin_write()?;
+            tx.set_durability(durability);
+            tx.open_multimap_table(LB_BALANCE_TO_ADDRESS)?;
+            tx.open_multimap_table(LB_EARNING_TO_ADDRESS)?;
+            tx.open_multimap_table(LB_ELEMENT_TO_ADDRESS)?;
+            tx.open_multimap_table(LB_POTENTIAL_TO_ADDRESS)?;
+            tx.open_table(ADDRESS_TO_BALANCE)?;
+            tx.open_table(ADDRESS_TO_STATS)?;
+            tx.open_table(SEQUENCE_NUMBER_TO_ADDRESS)?;
+            tx.commit()?;
+          }
+
           let tx = database.begin_read()?;
           let statistics = tx.open_table(STATISTIC_TO_COUNT)?;
 
@@ -326,10 +370,16 @@ impl Index {
 
         tx.set_durability(durability);
 
+        tx.open_multimap_table(LB_BALANCE_TO_ADDRESS)?;
+        tx.open_multimap_table(LB_EARNING_TO_ADDRESS)?;
+        tx.open_multimap_table(LB_ELEMENT_TO_ADDRESS)?;
+        tx.open_multimap_table(LB_POTENTIAL_TO_ADDRESS)?;
         tx.open_multimap_table(SATPOINT_TO_SEQUENCE_NUMBER)?;
         tx.open_multimap_table(SAT_TO_SEQUENCE_NUMBER)?;
         tx.open_multimap_table(SEQUENCE_NUMBER_TO_CHILDREN)?;
         tx.open_multimap_table(HEIGHT_TO_SEQUENCE_NUMBER)?;
+        tx.open_table(ADDRESS_TO_BALANCE)?;
+        tx.open_table(ADDRESS_TO_STATS)?;
         tx.open_table(HEIGHT_TO_BLOCK_HEADER)?;
         tx.open_table(HEIGHT_TO_LAST_SEQUENCE_NUMBER)?;
         tx.open_table(HOME_INSCRIPTIONS)?;
@@ -340,6 +390,7 @@ impl Index {
         tx.open_table(RUNE_ID_TO_RUNE_ENTRY)?;
         tx.open_table(RUNE_TO_RUNE_ID)?;
         tx.open_table(SAT_TO_SATPOINT)?;
+        tx.open_table(SEQUENCE_NUMBER_TO_ADDRESS)?;
         tx.open_table(SEQUENCE_NUMBER_TO_INSCRIPTION_ENTRY)?;
         tx.open_table(SEQUENCE_NUMBER_TO_RUNE_ID)?;
         tx.open_table(SEQUENCE_NUMBER_TO_SATPOINT)?;
@@ -548,10 +599,16 @@ impl Index {
 
     let mut tables: BTreeMap<String, TableInfo> = BTreeMap::new();
 
+    insert_multimap_table_info(&mut tables, &wtx, total_bytes, LB_BALANCE_TO_ADDRESS);
+    insert_multimap_table_info(&mut tables, &wtx, total_bytes, LB_EARNING_TO_ADDRESS);
+    insert_multimap_table_info(&mut tables, &wtx, total_bytes, LB_ELEMENT_TO_ADDRESS);
+    insert_multimap_table_info(&mut tables, &wtx, total_bytes, LB_POTENTIAL_TO_ADDRESS);
     insert_multimap_table_info(&mut tables, &wtx, total_bytes, SATPOINT_TO_SEQUENCE_NUMBER);
     insert_multimap_table_info(&mut tables, &wtx, total_bytes, SAT_TO_SEQUENCE_NUMBER);
     insert_multimap_table_info(&mut tables, &wtx, total_bytes, SEQUENCE_NUMBER_TO_CHILDREN);
     insert_multimap_table_info(&mut tables, &wtx, total_bytes, HEIGHT_TO_SEQUENCE_NUMBER);
+    insert_table_info(&mut tables, &wtx, total_bytes, ADDRESS_TO_BALANCE);
+    insert_table_info(&mut tables, &wtx, total_bytes, ADDRESS_TO_STATS);
     insert_table_info(&mut tables, &wtx, total_bytes, HEIGHT_TO_BLOCK_HEADER);
     insert_table_info(
       &mut tables,
@@ -578,6 +635,7 @@ impl Index {
     insert_table_info(&mut tables, &wtx, total_bytes, RUNE_ID_TO_RUNE_ENTRY);
     insert_table_info(&mut tables, &wtx, total_bytes, RUNE_TO_RUNE_ID);
     insert_table_info(&mut tables, &wtx, total_bytes, SAT_TO_SATPOINT);
+    insert_table_info(&mut tables, &wtx, total_bytes, SEQUENCE_NUMBER_TO_ADDRESS);
     insert_table_info(
       &mut tables,
       &wtx,
@@ -798,7 +856,6 @@ impl Index {
     )
   }
 
-  #[cfg(test)]
   pub(crate) fn statistic(&self, statistic: Statistic) -> u64 {
     self
       .database
@@ -1201,6 +1258,63 @@ impl Index {
   pub(crate) fn get_children_by_sequence_number(&self, sequence_number: u32) -> Result<Vec<InscriptionId>> {
     let (children, _more) = self.get_children_by_sequence_number_paginated(sequence_number, usize::MAX, 0)?;
     Ok(children)
+  }
+
+  pub(crate) fn get_balance_leaderboard(&self) -> Result<Vec<LeaderboardRow>> {
+    // eprintln!("get_balance_leaderboard");
+    let rtx = self.database.begin_read()?;
+    let table = rtx.open_multimap_table(LB_BALANCE_TO_ADDRESS)?;
+    self.get_leaderboard(&table)
+  }
+
+  pub(crate) fn get_earning_leaderboard(&self) -> Result<Vec<LeaderboardRow>> {
+    // eprintln!("get_earning_leaderboard");
+    let rtx = self.database.begin_read()?;
+    let table = rtx.open_multimap_table(LB_EARNING_TO_ADDRESS)?;
+    self.get_leaderboard(&table)
+  }
+/*
+  pub(crate) fn get_element_leaderboard(&self) -> Result<Vec<LeaderboardRow>> {
+    let rtx = self.database.begin_read()?;
+    let table = rtx.open_multimap_table(LB_ELEMENT_TO_ADDRESS)?;
+    self.get_leaderboard(&table)
+  }
+*/
+  pub(crate) fn get_potential_leaderboard(&self) -> Result<Vec<LeaderboardRow>> {
+    // eprintln!("get_potential_leaderboard");
+    let rtx = self.database.begin_read()?;
+    let table = rtx.open_multimap_table(LB_POTENTIAL_TO_ADDRESS)?;
+    self.get_leaderboard(&table)
+  }
+
+  pub(crate) fn get_leaderboard<'db, 'tx, 'a>(
+    &self,
+    table: &'a ReadOnlyMultimapTable<'db, u64, &'static [u8]>,
+  ) -> Result<Vec<LeaderboardRow>> {
+    // eprintln!("get_leaderboard");
+    let mut result = Vec::new();
+    let mut count = 1;
+    for range in table.range(0..)?.rev() {
+      let (amount, addresses) = range?;
+      let amount = amount.value() as f64 / 1e6;
+      let position = count;
+      for address in addresses {
+        let address = std::str::from_utf8(address?.value())?.to_string();
+        // eprintln!("get address stats for {}", address);
+        let stats = self.wiz_get_address_stats(&address)?.unwrap();
+        result.push(LeaderboardRow {
+          position, 
+          address,
+          amount,
+          wizards: stats.wizards,
+          full_sets: stats.sets,
+          elements: stats.elements,
+        });
+        count += 1;
+      }
+    }
+
+    Ok(result)
   }
 
   pub(crate) fn get_children_by_sequence_number_paginated(
@@ -2306,6 +2420,50 @@ impl Index {
         .map(|(_sequence_number, satpoint, inscription_id)| (satpoint, inscription_id))
         .collect(),
     )
+  }
+
+  pub(crate) fn wiz_get_address_balance(
+    &self,
+    address: &String,
+  ) -> Result<f64> {
+    let rtx = self.database.begin_read()?;
+    let address_to_balance = rtx.open_table(ADDRESS_TO_BALANCE)?;
+    let balance = address_to_balance.get(address.as_bytes())?;
+    Ok(match balance {
+      Some(balance) => balance.value(),
+      None => 0.0,
+    })
+  }
+
+  pub(crate) fn wiz_get_balances(
+    &self,
+  ) -> Result<HashMap<String, f64>> {
+    let mut result = HashMap::new();
+    let rtx = self.database.begin_read()?;
+    let address_to_balance = rtx.open_table(ADDRESS_TO_BALANCE)?;
+    eprintln!("address_to_balance has {} rows", address_to_balance.len()?);
+    for x in address_to_balance.iter()? {
+      let (address, balance) = x?;
+      let (address, balance) = (address.value(), balance.value());
+      let address = std::str::from_utf8(address)?;
+      // eprintln!("address {} has balance {}", address, balance);
+      result.insert(address.to_string(), balance);
+    }
+    Ok(result)
+  }
+
+  pub(crate) fn wiz_get_address_stats(
+    &self,
+    address: &String,
+  ) -> Result<Option<WizardStats>> {
+    let rtx = self.database.begin_read()?;
+    let address_to_stats = rtx.open_table(ADDRESS_TO_STATS)?;
+    let stats = address_to_stats.get(address.as_bytes())?;
+
+    Ok(match stats {
+      Some(stats) => Some(WizardStats::load(stats.value())),
+      None => None,
+    })
   }
 }
 

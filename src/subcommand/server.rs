@@ -1,4 +1,7 @@
+use bitcoin::address::NetworkUnchecked;
 use {
+  self::wizardz::Element,
+  self::wizardz::Wiz,
   self::wallet::inscribe::Inscribe,
   self::{
     accept_encoding::AcceptEncoding,
@@ -8,6 +11,7 @@ use {
   },
   super::*,
   crate::{
+    index::Statistic,
     server_config::ServerConfig,
     templates::{
       BlockHtml, BlockJson, BlocksHtml, ChildrenHtml, ChildrenJson, ClockSvg, CollectionsHtml,
@@ -255,7 +259,7 @@ impl Server {
             log::warn!("Updating index: {error}");
           }
         }
-        thread::sleep(Duration::from_millis(500));
+        thread::sleep(Duration::from_millis(3 * 1000));
       });
       INDEXER.lock().unwrap().replace(index_thread);
 
@@ -362,6 +366,19 @@ impl Server {
         .route("/transfers/:height/:start", get(Self::inscriptionids_from_height_start))
         .route("/transfers/:height/:start/:end", get(Self::inscriptionids_from_height_start_end))
         .route("/tx/:txid", get(Self::transaction))
+
+        // wizardz
+        .route("/address/:address", get(Self::wizard_address))
+        .route("/balance/:address", get(Self::wizard_balance))
+        .route("/balances", get(Self::wizard_balances))
+        .route("/constants", get(Self::wizard_constants))
+        .route("/leaderboards", get(Self::wizard_leaderboards))
+        .route("/leaderboard/balance", get(Self::wizard_leaderboard_balance))
+        .route("/leaderboard/earning", get(Self::wizard_leaderboard_earning))
+        .route("/leaderboard/potential", get(Self::wizard_leaderboard_potential))
+        .route("/overview", get(Self::wizard_overview))
+        .route("/supply", get(Self::wizard_supply))
+
         .layer(Extension(index))
         .layer(Extension(server_config.clone()))
         .layer(Extension(config))
@@ -2199,6 +2216,167 @@ impl Server {
     }
 
     Redirect::to(&destination)
+  }
+
+  async fn wizard_address(
+    Extension(server_config): Extension<Arc<ServerConfig>>,
+    Extension(index): Extension<Arc<Index>>,
+    Path(address): Path<String>,
+  ) -> ServerResult<Response> {
+    task::block_in_place(|| {
+      log::info!("GET /address/{address}");
+
+      let addr: Address<NetworkUnchecked> = match address.parse() {
+        Ok(addr) => addr,
+        Err(err) => return Err(ServerError::BadRequest(format!("error: bad address {address}: {err}"))),
+      };
+      match addr.require_network(server_config.chain.network()) {
+        Err(err) => return Err(ServerError::BadRequest(format!("error: {err}"))),
+        _ => (),
+      }
+
+      match index.wiz_get_address_stats(&address)? {
+        Some(stats) => Ok(Json(stats).into_response()),
+        None => return Err(ServerError::BadRequest(format!("error: address {address} owns no relevant inscriptions"))),
+      }
+    })
+  }
+
+  async fn wizard_balance(
+    Extension(server_config): Extension<Arc<ServerConfig>>,
+    Extension(index): Extension<Arc<Index>>,
+    Path(address): Path<String>,
+  ) -> ServerResult<Response> {
+    task::block_in_place(|| {
+      log::info!("GET /balance/{address}");
+
+      let addr: Address<NetworkUnchecked> = match address.parse() {
+        Ok(addr) => addr,
+        Err(err) => return Err(ServerError::BadRequest(format!("error: bad address {address}: {err}"))),
+      };
+      match addr.require_network(server_config.chain.network()) {
+        Err(err) => return Err(ServerError::BadRequest(format!("error: {err}"))),
+        _ => (),
+      }
+      
+      Ok(Json(index.wiz_get_address_balance(&address)?).into_response())
+    })
+  }
+
+  async fn wizard_balances(
+    Extension(index): Extension<Arc<Index>>,
+  ) -> ServerResult<Response> {
+    task::block_in_place(|| {
+      log::info!("GET /balances");
+
+      Ok(Json(index.wiz_get_balances()?).into_response())
+    })
+  }
+
+  async fn wizard_constants(
+  ) -> ServerResult<Response> {
+    task::block_in_place(|| {
+      log::info!("GET /constants");
+
+      let wiz = Wiz::new();
+
+      Ok(Json(wiz).into_response())
+    })
+  }
+
+  async fn wizard_leaderboard_balance(
+    Extension(index): Extension<Arc<Index>>,
+  ) -> ServerResult<Response> {
+    task::block_in_place(|| {
+      log::info!("GET /leaderboard/balance");
+
+      let balance_lb = index.get_balance_leaderboard()?;
+
+      Ok(Json(balance_lb).into_response())
+    })
+  }
+
+  async fn wizard_leaderboard_earning(
+    Extension(index): Extension<Arc<Index>>,
+  ) -> ServerResult<Response> {
+    task::block_in_place(|| {
+      log::info!("GET /leaderboard/earning");
+
+      let earning_lb = index.get_earning_leaderboard()?;
+
+      Ok(Json(earning_lb).into_response())
+    })
+  }
+
+  async fn wizard_leaderboard_potential(
+    Extension(index): Extension<Arc<Index>>,
+  ) -> ServerResult<Response> {
+    task::block_in_place(|| {
+      log::info!("GET /leaderboard/potential");
+
+      let potential_lb = index.get_potential_leaderboard()?;
+
+      Ok(Json(potential_lb).into_response())
+    })
+  }
+
+  async fn wizard_leaderboards(
+    Extension(index): Extension<Arc<Index>>,
+  ) -> ServerResult<Response> {
+    task::block_in_place(|| {
+      log::info!("GET /leaderboards");
+
+      let mut result = IndexMap::new();
+
+      let balance_lb = index.get_balance_leaderboard()?;
+      let earning_lb = index.get_earning_leaderboard()?;
+      // let element_lb = index.get_element_leaderboard()?;
+      let potential_lb = index.get_potential_leaderboard()?;
+
+      result.insert("balance", &balance_lb);
+      result.insert("earning", &earning_lb);
+      // result.insert("element", &element_lb);
+      result.insert("potential", &potential_lb);
+
+      Ok(Json(result).into_response())
+    })
+  }
+
+  async fn wizard_overview(
+    Extension(index): Extension<Arc<Index>>,
+  ) -> ServerResult<Response> {
+    task::block_in_place(|| {
+      log::info!("GET /overview");
+
+      let mut overview = IndexMap::new();
+      overview.insert("alchemists",       index.statistic(Statistic::WizAlchemists));
+      overview.insert("allocated",        index.statistic(Statistic::WizAllocated));
+      overview.insert("block_height",     index.block_height()?.unwrap().0 as u64);
+      overview.insert("funded_addresses", index.statistic(Statistic::WizFundedAddresses));
+      overview.insert("holder_addresses", index.statistic(Statistic::WizHolders));
+      overview.insert("remaining",        index.statistic(Statistic::WizRemaining));
+
+      Ok(Json(overview).into_response())
+    })
+  }
+
+  async fn wizard_supply(
+    Extension(index): Extension<Arc<Index>>,
+  ) -> ServerResult<Response> {
+    task::block_in_place(|| {
+      log::info!("GET /supply");
+
+      let mut supply = IndexMap::new();
+      supply.insert("wizard".to_string(),           index.statistic(Statistic::WizWizards));
+      supply.insert(format!("{}", Element::Fire),   index.statistic(Statistic::WizElement0));
+      supply.insert(format!("{}", Element::Water),  index.statistic(Statistic::WizElement1));
+      supply.insert(format!("{}", Element::Shadow), index.statistic(Statistic::WizElement2));
+      supply.insert(format!("{}", Element::Earth),  index.statistic(Statistic::WizElement3));
+      supply.insert(format!("{}", Element::Wind),   index.statistic(Statistic::WizElement4));
+      supply.insert(format!("{}", Element::Spirit), index.statistic(Statistic::WizElement5));
+
+      Ok(Json(supply).into_response())
+    })
   }
 }
 

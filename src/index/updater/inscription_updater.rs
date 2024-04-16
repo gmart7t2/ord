@@ -38,6 +38,7 @@ enum Origin {
 }
 
 pub(super) struct InscriptionUpdater<'a, 'db, 'tx> {
+  pub(super) address_to_balance: &'a mut Table<'db, 'tx, &'static [u8], f64>,
   pub(super) blessed_inscription_count: u64,
   pub(super) chain: Chain,
   pub(super) cursed_inscription_count: u64,
@@ -61,6 +62,7 @@ pub(super) struct InscriptionUpdater<'a, 'db, 'tx> {
   pub(super) sat_to_sequence_number: &'a mut MultimapTable<'db, 'tx, u64, u32>,
   pub(super) satpoint_to_sequence_number:
     &'a mut MultimapTable<'db, 'tx, &'static SatPointValue, u32>,
+  pub(super) sequence_number_to_address: &'a mut Table<'db, 'tx, u32, &'static [u8]>,
   pub(super) sequence_number_to_children: &'a mut MultimapTable<'db, 'tx, u32, u32>,
   pub(super) sequence_number_to_entry: &'a mut Table<'db, 'tx, u32, InscriptionEntryValue>,
   pub(super) sequence_number_to_satpoint: &'a mut Table<'db, 'tx, u32, &'static SatPointValue>,
@@ -77,6 +79,7 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
     tx: &Transaction,
     txid: Txid,
     input_sat_ranges: Option<&VecDeque<(u64, u64)>>,
+    wizardz_updater: &mut WizardzUpdater,
   ) -> Result {
     let mut floating_inscriptions = Vec::new();
     let mut id_counter = 0;
@@ -339,7 +342,7 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
         _ => new_satpoint,
       };
 
-      self.update_inscription_location(input_sat_ranges, flotsam, new_satpoint)?;
+      self.update_inscription_location(input_sat_ranges, flotsam, new_satpoint, wizardz_updater)?;
     }
 
     if is_coinbase {
@@ -348,7 +351,7 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
           outpoint: OutPoint::null(),
           offset: self.lost_sats + flotsam.offset - output_value,
         };
-        self.update_inscription_location(input_sat_ranges, flotsam, new_satpoint)?;
+        self.update_inscription_location(input_sat_ranges, flotsam, new_satpoint, wizardz_updater)?;
       }
       self.lost_sats += self.reward - output_value;
       Ok(())
@@ -386,6 +389,7 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
     input_sat_ranges: Option<&VecDeque<(u64, u64)>>,
     flotsam: Flotsam,
     new_satpoint: SatPoint,
+    wizardz_updater: &mut WizardzUpdater,
   ) -> Result {
     let inscription_id = flotsam.inscription_id;
     let (unbound, sequence_number) = match flotsam.origin {
@@ -396,6 +400,8 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
             .get(&inscription_id.store())?
             .unwrap()
             .value();
+        wizardz_updater.update_if_ours(self.address_to_balance, inscription_id, self.sequence_number_to_address, sequence_number, &new_satpoint, false)?;
+
         if let Some(height_to_sequence_number) = &mut self.height_to_sequence_number {
           // eprintln!("insert height {} seq {}", self.height, sequence_number);
           height_to_sequence_number.insert(&self.height, &sequence_number)?;
@@ -438,6 +444,8 @@ impl<'a, 'db, 'tx> InscriptionUpdater<'a, 'db, 'tx> {
         self
           .inscription_number_to_sequence_number
           .insert(inscription_number, sequence_number)?;
+
+        wizardz_updater.update_if_ours(self.address_to_balance, inscription_id, self.sequence_number_to_address, sequence_number, &new_satpoint, true)?;
 
         let sat = if unbound {
           None

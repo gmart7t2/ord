@@ -318,6 +318,86 @@ impl Entry for InscriptionEntry {
   }
 }
 
+#[derive(Debug, Serialize)]
+pub(crate) struct WizardStats {
+  pub(crate) wizards: u16,
+  pub(crate) sets: u16,
+  pub(crate) elements: IndexMap<Element, u16>,
+  pub(crate) balance: f64,
+  pub(crate) earning: f64,
+  pub(crate) potential: f64,
+  pub(crate) rank_balance: u16,
+  pub(crate) rank_earning: u16,
+  pub(crate) rank_potential: u16,
+}
+
+pub(crate) type WizardStatsValue = (
+  u32,                // wizards and sets
+  u16,                // element 0
+  u16,                // element 1
+  u16,                // element 2
+  u16,                // element 3
+  u16,                // element 4
+  u16,                // element 5
+  f64,                // balance
+  f64,                // earning per block
+  f64,                // potential
+  u16,                // rank balance
+  u32,                // rank earning and potential
+);
+
+impl Entry for WizardStats {
+  type Value = WizardStatsValue;
+
+  #[rustfmt::skip]
+  fn load(
+    (
+      wizards_and_sets,
+      element0, element1, element2, element3, element4, element5,
+      balance,
+      earning,
+      potential,
+      rank_balance,
+      rank_earning_and_potential,
+    ): WizardStatsValue,
+  ) -> Self {
+    let mut elements = IndexMap::new();
+    let vec = vec![element0, element1, element2, element3, element4, element5];
+    for element in Element::VALUES {
+      let element_index = element.clone() as usize;
+      elements.insert(element, vec[element_index]);
+    }
+    Self {
+      wizards: (wizards_and_sets % 65536) as u16,
+      sets: (wizards_and_sets / 65536) as u16,
+      elements,
+      balance,
+      earning,
+      potential,
+      rank_balance,
+      rank_earning: (rank_earning_and_potential % 65536) as u16,
+      rank_potential: (rank_earning_and_potential / 65536) as u16,
+    }
+  }
+
+  fn store(self) -> Self::Value {
+    let mut elements = Vec::new();
+    for element in Element::VALUES {
+      elements.push(self.elements[&element]);
+    }
+        
+    (
+      self.wizards as u32 + self.sets as u32 * 65536,
+      elements[0], elements[1], elements[2], elements[3], elements[4], elements[5],
+      self.balance,
+      self.earning,
+      self.potential,
+      self.rank_balance,
+      self.rank_earning as u32 + self.rank_potential as u32 * 65536,
+    )
+  }
+}
+
 pub(crate) type InscriptionIdValue = (u128, u128, u32);
 
 impl Entry for InscriptionId {

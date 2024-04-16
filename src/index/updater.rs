@@ -1,5 +1,5 @@
 use {
-  self::{inscription_updater::InscriptionUpdater, rune_updater::RuneUpdater},
+  self::{inscription_updater::InscriptionUpdater, rune_updater::RuneUpdater, wizardz_updater::WizardzUpdater,wizardz::Wiz},
   super::{fetcher::Fetcher, *},
   futures::future::try_join_all,
   std::sync::mpsc,
@@ -8,6 +8,7 @@ use {
 
 mod inscription_updater;
 mod rune_updater;
+mod wizardz_updater;
 
 pub(crate) struct BlockData {
   pub(crate) header: Header,
@@ -38,18 +39,40 @@ pub(crate) struct Updater<'index> {
   outputs_cached: u64,
   outputs_inserted_since_flush: u64,
   outputs_traversed: u64,
+  wizardz_updater: WizardzUpdater<'index>,
 }
 
 impl<'index> Updater<'_> {
   pub(crate) fn new(index: &'index Index) -> Result<Updater<'index>> {
+    let mut wizardz_updater = WizardzUpdater::new(index)?;
+    let height = index.block_count()?;
+    let wtx = index.begin_write()?;
+    {
+      let inscription_id_to_sequence_number = wtx.open_table(INSCRIPTION_ID_TO_SEQUENCE_NUMBER)?;
+      let mut sequence_number_to_address = wtx.open_table(SEQUENCE_NUMBER_TO_ADDRESS)?;
+      let sequence_number_to_satpoint = wtx.open_table(SEQUENCE_NUMBER_TO_SATPOINT)?;
+
+      if height >= Wiz::START_HEIGHT {
+        // eprintln!("running wizardz_updater.initialize() from updater new() at height {height}");
+        wizardz_updater.initialize(
+          &inscription_id_to_sequence_number,
+          &mut sequence_number_to_address,
+          &sequence_number_to_satpoint,
+          height,
+        )?;
+      }
+    }
+    wtx.commit()?;
+
     Ok(Updater {
       range_cache: HashMap::new(),
-      height: index.block_count()?,
+      height,
       index,
       sat_ranges_since_flush: 0,
       outputs_cached: 0,
       outputs_inserted_since_flush: 0,
       outputs_traversed: 0,
+      wizardz_updater,
     })
   }
 
@@ -395,6 +418,12 @@ impl<'index> Updater<'_> {
       }
     }
 
+    let mut address_to_balance = wtx.open_table(ADDRESS_TO_BALANCE)?;
+    let mut address_to_stats = wtx.open_table(ADDRESS_TO_STATS)?;
+    let mut lb_balance_to_address = wtx.open_multimap_table(LB_BALANCE_TO_ADDRESS)?;
+    let mut lb_earning_to_address = wtx.open_multimap_table(LB_EARNING_TO_ADDRESS)?;
+    let mut lb_element_to_address = wtx.open_multimap_table(LB_ELEMENT_TO_ADDRESS)?;
+    let mut lb_potential_to_address = wtx.open_multimap_table(LB_POTENTIAL_TO_ADDRESS)?;
     let mut height_to_block_header = wtx.open_table(HEIGHT_TO_BLOCK_HEADER)?;
     let mut height_to_sequence_number = if index.index_transfers {
       Some(wtx.open_multimap_table(HEIGHT_TO_SEQUENCE_NUMBER)?)
@@ -412,6 +441,7 @@ impl<'index> Updater<'_> {
     let mut sequence_number_to_children = wtx.open_multimap_table(SEQUENCE_NUMBER_TO_CHILDREN)?;
     let mut sequence_number_to_inscription_entry =
       wtx.open_table(SEQUENCE_NUMBER_TO_INSCRIPTION_ENTRY)?;
+    let mut sequence_number_to_address = wtx.open_table(SEQUENCE_NUMBER_TO_ADDRESS)?;
     let mut sequence_number_to_satpoint = wtx.open_table(SEQUENCE_NUMBER_TO_SATPOINT)?;
     let mut statistic_to_count = wtx.open_table(STATISTIC_TO_COUNT)?;
     let mut transaction_id_to_transaction = wtx.open_table(TRANSACTION_ID_TO_TRANSACTION)?;
@@ -446,6 +476,7 @@ impl<'index> Updater<'_> {
     let home_inscription_count = home_inscriptions.len()?;
 
     let mut inscription_updater = InscriptionUpdater {
+      address_to_balance: &mut address_to_balance,
       blessed_inscription_count,
       chain: self.index.options.chain(),
       cursed_inscription_count,
@@ -465,6 +496,7 @@ impl<'index> Updater<'_> {
       reward: Height(self.height).subsidy(),
       sat_to_sequence_number: &mut sat_to_sequence_number,
       satpoint_to_sequence_number: &mut satpoint_to_sequence_number,
+      sequence_number_to_address: &mut sequence_number_to_address,
       sequence_number_to_children: &mut sequence_number_to_children,
       sequence_number_to_entry: &mut sequence_number_to_inscription_entry,
       sequence_number_to_satpoint: &mut sequence_number_to_satpoint,
@@ -569,7 +601,7 @@ impl<'index> Updater<'_> {
       }
     } else if index_inscriptions {
       for (tx, txid) in block.txdata.iter().skip(1).chain(block.txdata.first()) {
-        inscription_updater.index_envelopes(tx, *txid, None)?;
+        inscription_updater.index_envelopes(tx, *txid, None, &mut self.wizardz_updater)?;
       }
     }
 
@@ -649,6 +681,31 @@ impl<'index> Updater<'_> {
       }
     }
 
+    {
+      if self.height == Wiz::START_HEIGHT {
+        // eprintln!("running wizardz_updater.initialize() from index_block at height {}", self.height);
+        self.wizardz_updater.initialize(
+          &inscription_id_to_sequence_number,
+          &mut sequence_number_to_address,
+          &sequence_number_to_satpoint,
+          self.height,
+        )?;
+      }
+
+      if self.height >= Wiz::START_HEIGHT && self.height <= Wiz::END_HEIGHT {
+        self.wizardz_updater.index_wizardz(
+          &mut address_to_balance,
+          &mut address_to_stats,
+          &mut lb_balance_to_address,
+          &mut lb_earning_to_address,
+          &mut lb_element_to_address,
+          &mut lb_potential_to_address,
+          self.height,
+          &mut statistic_to_count,
+        )?;
+      }
+    }
+
     height_to_block_header.insert(&self.height, &block.header.store())?;
 
     self.height += 1;
@@ -674,7 +731,7 @@ impl<'index> Updater<'_> {
     index_inscriptions: bool,
   ) -> Result {
     if index_inscriptions {
-      inscription_updater.index_envelopes(tx, txid, Some(input_sat_ranges))?;
+      inscription_updater.index_envelopes(tx, txid, Some(input_sat_ranges), &mut self.wizardz_updater)?;
     }
 
     for (vout, output) in tx.output.iter().enumerate() {

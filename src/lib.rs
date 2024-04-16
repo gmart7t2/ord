@@ -53,6 +53,7 @@ use {
   clap::{ArgGroup, Parser},
   derive_more::{Display, FromStr},
   html_escaper::{Escape, Trusted},
+  indexmap::IndexMap,
   lazy_static::lazy_static,
   regex::Regex,
   serde::{Deserialize, Deserializer, Serialize, Serializer},
@@ -138,6 +139,7 @@ mod server_config;
 pub mod subcommand;
 mod tally;
 pub mod templates;
+mod wizardz;
 
 type Result<T = (), E = Error> = std::result::Result<T, E>;
 
