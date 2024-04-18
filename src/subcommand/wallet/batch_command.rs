@@ -13,7 +13,13 @@ pub(crate) struct Batch {
 
 impl Batch {
   pub(crate) fn run(self, wallet: Wallet) -> SubcommandResult {
-    let utxos = wallet.utxos();
+    let map;
+    let utxos = if self.shared.coin_control {
+      map = BTreeMap::new();
+      &map
+    } else {
+      wallet.utxos()
+    };
 
     let batchfile = batch::File::load(&self.batch)?;
 

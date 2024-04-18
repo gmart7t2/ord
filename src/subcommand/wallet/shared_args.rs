@@ -2,6 +2,8 @@ use super::*;
 
 #[derive(Debug, Parser)]
 pub(super) struct SharedArgs {
+  #[arg(long, help = "Only spend outpoints given with --utxo")]
+  pub(crate) coin_control: bool,
   #[arg(
     long,
     help = "Use <COMMIT_FEE_RATE> sats/vbyte for commit transaction.\nDefaults to <FEE_RATE> if unset."
