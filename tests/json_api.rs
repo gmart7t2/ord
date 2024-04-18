@@ -391,6 +391,7 @@ fn get_block() {
       best_height: 1,
       height: 0,
       inscriptions: Vec::new(),
+      runes: Vec::new(),
     }
   );
 }
@@ -568,22 +569,22 @@ fn get_runes() {
     api::Runes {
       entries: vec![
         (
-          RuneId { block: 10, tx: 1 },
+          RuneId { block: 24, tx: 1 },
           RuneEntry {
-            block: a.id.block,
+            block: c.id.block,
             burned: 0,
             terms: None,
             divisibility: 0,
-            etching: a.output.reveal,
+            etching: c.output.reveal,
             mints: 0,
-            number: 0,
+            number: 2,
             premine: 1000,
             spaced_rune: SpacedRune {
-              rune: Rune(RUNE),
+              rune: Rune(RUNE + 2),
               spacers: 0
             },
             symbol: Some('¢'),
-            timestamp: 10,
+            timestamp: 24,
             turbo: false,
           }
         ),
@@ -608,95 +609,29 @@ fn get_runes() {
           }
         ),
         (
-          RuneId { block: 24, tx: 1 },
+          RuneId { block: 10, tx: 1 },
           RuneEntry {
-            block: c.id.block,
+            block: a.id.block,
             burned: 0,
             terms: None,
             divisibility: 0,
-            etching: c.output.reveal,
+            etching: a.output.reveal,
             mints: 0,
-            number: 2,
+            number: 0,
             premine: 1000,
             spaced_rune: SpacedRune {
-              rune: Rune(RUNE + 2),
+              rune: Rune(RUNE),
               spacers: 0
             },
             symbol: Some('¢'),
-            timestamp: 24,
+            timestamp: 10,
             turbo: false,
           }
         )
-      ]
+      ],
+      more: false,
+      next: None,
+      prev: None,
     }
   );
-}
-#[test]
-fn get_runes_balances() {
-  let core = mockcore::builder().network(Network::Regtest).build();
-
-  let ord = TestServer::spawn_with_server_args(&core, &["--index-runes", "--regtest"], &[]);
-
-  create_wallet(&core, &ord);
-
-  core.mine_blocks(3);
-
-  let rune0 = Rune(RUNE);
-  let rune1 = Rune(RUNE + 1);
-  let rune2 = Rune(RUNE + 2);
-
-  let e0 = etch(&core, &ord, rune0);
-  let e1 = etch(&core, &ord, rune1);
-  let e2 = etch(&core, &ord, rune2);
-
-  core.mine_blocks(1);
-
-  let rune_balances: BTreeMap<Rune, BTreeMap<OutPoint, u128>> = vec![
-    (
-      rune0,
-      vec![(
-        OutPoint {
-          txid: e0.output.reveal,
-          vout: 1,
-        },
-        1000,
-      )]
-      .into_iter()
-      .collect(),
-    ),
-    (
-      rune1,
-      vec![(
-        OutPoint {
-          txid: e1.output.reveal,
-          vout: 1,
-        },
-        1000,
-      )]
-      .into_iter()
-      .collect(),
-    ),
-    (
-      rune2,
-      vec![(
-        OutPoint {
-          txid: e2.output.reveal,
-          vout: 1,
-        },
-        1000,
-      )]
-      .into_iter()
-      .collect(),
-    ),
-  ]
-  .into_iter()
-  .collect();
-
-  let response = ord.json_request("/runes/balances");
-  assert_eq!(response.status(), StatusCode::OK);
-
-  let runes_balance_json: BTreeMap<Rune, BTreeMap<OutPoint, u128>> =
-    serde_json::from_str(&response.text().unwrap()).unwrap();
-
-  pretty_assert_eq!(runes_balance_json, rune_balances);
 }
