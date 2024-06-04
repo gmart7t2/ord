@@ -3,6 +3,7 @@ use {super::*, boilerplate::Boilerplate};
 pub(crate) use {
   crate::subcommand::server::ServerConfig,
   address::AddressHtml,
+  address_content::AddressContentHtml,
   block::BlockHtml,
   children::ChildrenHtml,
   clock::ClockSvg,
@@ -31,6 +32,7 @@ pub use {
 };
 
 pub mod address;
+pub mod address_content;
 pub mod block;
 pub mod blocks;
 mod children;

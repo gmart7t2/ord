@@ -188,6 +188,16 @@ impl Output {
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct AddressContents {
+  pub inscriptions: Vec<InscriptionId>,
+  pub outputs: Vec<OutPoint>,
+  pub runes: BTreeMap<SpacedRune, Pile>,
+  pub sat_ranges: Option<Vec<(u64, u64)>>,
+  pub script_pubkey: String,
+  pub value: u64,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Sat {
   pub block: u32,
   pub charms: Vec<Charm>,

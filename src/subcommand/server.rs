@@ -6,7 +6,7 @@ use {
   },
   super::*,
   crate::templates::{
-    AddressHtml, BlockHtml, BlocksHtml, ChildrenHtml, ClockSvg, CollectionsHtml, HomeHtml,
+    AddressContentHtml, AddressHtml, BlockHtml, BlocksHtml, ChildrenHtml, ClockSvg, CollectionsHtml, HomeHtml,
     InputHtml, InscriptionHtml, InscriptionsBlockHtml, InscriptionsHtml, OutputHtml, PageContent,
     PageHtml, ParentsHtml, PreviewAudioHtml, PreviewCodeHtml, PreviewFontHtml, PreviewImageHtml,
     PreviewMarkdownHtml, PreviewModelHtml, PreviewPdfHtml, PreviewTextHtml, PreviewUnknownHtml,
@@ -181,6 +181,7 @@ impl Server {
       let router = Router::new()
         .route("/", get(Self::home))
         .route("/address/:address", get(Self::address))
+        .route("/address/:address/balances", get(Self::address_balances))
         .route("/block/:query", get(Self::block))
         .route("/blockcount", get(Self::block_count))
         .route("/blockhash", get(Self::block_hash))
@@ -866,6 +867,89 @@ impl Server {
         Json(outputs).into_response()
       } else {
         AddressHtml { address, outputs }
+          .page(server_config)
+          .into_response()
+      })
+    })
+  }
+
+  async fn address_balances(
+    Extension(server_config): Extension<Arc<ServerConfig>>,
+    Extension(index): Extension<Arc<Index>>,
+    Path(address): Path<Address<NetworkUnchecked>>,
+    AcceptJson(accept_json): AcceptJson,
+  ) -> ServerResult {
+    task::block_in_place(|| {
+      if !index.has_address_index() {
+        return Err(ServerError::NotFound(
+          "this server has no address index".to_string(),
+        ));
+      }
+
+      let address = address
+        .require_network(server_config.chain.network())
+        .map_err(|err| ServerError::BadRequest(err.to_string()))?;
+
+      let mut inscriptions = Vec::new();
+      let outputs = index.get_address_info(&address)?;
+      let mut runes :BTreeMap<SpacedRune, Pile> = BTreeMap::new();
+      let mut sat_ranges = Vec::new();
+      let script_pubkey = address.script_pubkey().to_asm_string();
+      let mut value = 0;
+
+      for output in &outputs {
+        let (output_info, _txout) = index
+          .get_output_info(*output)?
+          .ok_or_not_found(|| format!("output {output}"))?;
+ 
+       inscriptions.append(&mut output_info.inscriptions.clone());
+
+        for (key, value) in output_info.runes {
+          if runes.contains_key(&key) {
+            runes.insert(key, Pile {
+              amount: runes[&key].amount + value.amount,
+              divisibility: value.divisibility,
+              symbol: value.symbol,
+            });
+          } else {
+            runes.insert(key, value);
+          }
+        }
+
+        if index.has_sat_index() {
+          sat_ranges.append(&mut output_info.sat_ranges.unwrap());
+        }
+
+        value += output_info.value;
+      }
+
+      Ok(if accept_json {
+        Json(api::AddressContents {
+          inscriptions,
+          outputs,
+          runes,
+          sat_ranges: if index.has_sat_index() {
+            Some(sat_ranges)
+          } else {
+            None
+          },
+          script_pubkey,
+          value,
+        }).into_response()
+      } else {
+        AddressContentHtml {
+          address,
+          inscriptions,
+          outputs,
+          runes,
+          sat_ranges: if index.has_sat_index() {
+            Some(sat_ranges)
+          } else {
+            None
+          },
+          script_pubkey,
+          value,
+        }
           .page(server_config)
           .into_response()
       })
