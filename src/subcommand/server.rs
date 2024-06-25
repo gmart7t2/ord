@@ -923,6 +923,12 @@ impl Server {
         value += output_info.value;
       }
 
+      inscriptions.sort();
+
+      if index.has_sat_index() {
+        sat_ranges.sort();
+      }
+
       Ok(if accept_json {
         Json(api::AddressContents {
           inscriptions,
