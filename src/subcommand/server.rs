@@ -891,7 +891,7 @@ impl Server {
         .map_err(|err| ServerError::BadRequest(err.to_string()))?;
 
       let mut inscriptions = Vec::new();
-      let outputs = index.get_address_info(&address)?;
+      let mut outputs = index.get_address_info(&address)?;
       let mut runes :BTreeMap<SpacedRune, Pile> = BTreeMap::new();
       let mut sat_ranges = Vec::new();
       let script_pubkey = address.script_pubkey().to_asm_string();
@@ -922,6 +922,8 @@ impl Server {
 
         value += output_info.value;
       }
+
+      outputs.sort_unstable_by(|a, b| a.txid.to_string().cmp(&b.txid.to_string()).then(a.vout.cmp(&b.vout)));
 
       inscriptions.sort();
 
