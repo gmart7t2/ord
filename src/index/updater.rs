@@ -810,6 +810,10 @@ impl<'index> Updater<'_> {
 
     wtx.commit()?;
 
+    // Commit twice since due to a bug redb will only reuse pages freed in the
+    // transaction before last.
+    self.index.begin_write()?.commit()?;
+
     if let Some(progress_bar) = &progress_bar {
       progress_bar.inc(1);
     }
