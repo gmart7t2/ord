@@ -1,6 +1,15 @@
 Changelog
 =========
 
+[0.20.0-gm1](https://github.com/gmart7t2/ord/releases/tag/0.20.0-gm1) - 2024-09-04
+----------------------------------------------------------------------------------
+
+### Added
+- Add `--coin-control` and `--utxo` to `wallet batch`.
+
+### Changed
+- Have `--dry-run` show signed raw transactions rather than PSBTs.
+
 [0.20.0](https://github.com/ordinals/ord/releases/tag/0.20.0) - 2024-09-03
 --------------------------------------------------------------------------
 
