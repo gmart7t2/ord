@@ -2,6 +2,8 @@ use super::*;
 
 #[derive(Debug, Parser)]
 pub(super) struct SharedArgs {
+  #[arg(long, help = "Only spend outpoints given with --utxo")]
+  pub(crate) coin_control: bool,
   #[arg(
     long,
     help = "Use <COMMIT_FEE_RATE> sats/vbyte for commit transaction.\nDefaults to <FEE_RATE> if unset."
@@ -21,4 +23,6 @@ pub(super) struct SharedArgs {
     help = "Do not check that transactions are equal to or below the MAX_STANDARD_TX_WEIGHT of 400,000 weight units. Transactions over this limit are currently nonstandard and will not be relayed by bitcoind in its default configuration. Do not use this flag unless you understand the implications."
   )]
   pub(crate) no_limit: bool,
+  #[arg(long, help = "Consider spending outpoint <UTXO>, even if it is unconfirmed or contains inscriptions")]
+  pub(crate) utxo: Vec<OutPoint>,
 }
