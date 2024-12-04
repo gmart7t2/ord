@@ -33,7 +33,7 @@ use {
     collections::HashMap,
     io::{BufWriter, Write},
     sync::Once,
-    sync::{Arc, MutexGuard, Mutex, PoisonError}
+    sync::{Arc, Mutex, PoisonError}
   },
 };
 use crate::webrtc::WebRTCService;

@@ -6,14 +6,10 @@ use {
   axum::{extract::WebSocketUpgrade, response::IntoResponse},
   tokio::sync::Mutex,
   std::sync::Arc,
-  tokio::net::TcpStream,
-  futures_util::{SinkExt, StreamExt},
   axum::extract::ws::{Message, WebSocket},
-  ::webrtc::ice_transport::ice_candidate::RTCIceCandidate,
   ::webrtc::peer_connection::sdp::sdp_type::RTCSdpType,
-  ::webrtc::ice_transport::ice_protocol::RTCIceProtocol,
   serde::{Deserialize, Serialize},
-  serde_json,
+  
 };
 
 pub use crate::{
@@ -39,7 +35,7 @@ pub async fn signaling_endpoint(
 ) -> impl IntoResponse {
   ws.on_upgrade(move |mut socket| async move {
       // WebRTC signaling logic
-      let mut webrtc_service = state.lock().await;
+      let  webrtc_service = state.lock().await;
 
       // Example signaling flow: receive offer, send answer
       if let Some(offer) = receive_offer(&mut socket).await {

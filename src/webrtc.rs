@@ -1,6 +1,5 @@
 use webrtc::ice_transport::ice_candidate::RTCIceCandidateInit;
 use webrtc::peer_connection::RTCPeerConnection;
-use ::webrtc::ice_transport::ice_candidate::RTCIceCandidate;
 use webrtc::data_channel::RTCDataChannel;
 use webrtc::data_channel::data_channel_init::RTCDataChannelInit;
 use webrtc::peer_connection::sdp::session_description::RTCSessionDescription;
