@@ -42,7 +42,16 @@ pub struct WebRTCState {
   pub sessions: Mutex<HashMap<String, Arc<WebRTCService>>>,
 }
 
+// Default trait implementation for WebRTCState
+impl Default for WebRTCState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WebRTCState {
+
+
     pub fn new() -> Self {
         WebRTCState {
             sessions: Mutex::new(HashMap::new()),
@@ -65,7 +74,7 @@ impl WebRTCState {
 
   pub async fn get_session(&self, id: &str) -> Option<Arc<WebRTCService>> {
       let sessions = self.sessions.lock().unwrap();
-      sessions.get(id).map(|service| Arc::clone(service))
+      sessions.get(id).map(Arc::clone)
   }
   
   
