@@ -71,6 +71,8 @@ tempfile = "3.2.0"
 tokio = { version = "1.17.0", features = ["full", "rt-multi-thread"] }
 tokio-stream = "0.1.9"
 tokio-tungstenite = "0.24.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
 tokio-util = {version = "0.7.3", features = ["compat"] }
 tower-http = { version = "0.4.0", features = ["auth", "compression-br", "compression-gzip", "cors", "set-header"] }
 urlencoding = "2.1.3"
