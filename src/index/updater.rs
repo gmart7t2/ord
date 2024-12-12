@@ -41,7 +41,7 @@ pub(crate) struct Updater<'index> {
 }
 
 impl Updater<'_> {
-  pub(crate) fn update_index(&mut self, mut wtx: WriteTransaction) -> Result {
+  pub(crate) fn update_index(&mut self, mut wtx: WriteTransaction, safety: u32) -> Result {
     let start = Instant::now();
     let starting_height = u32::try_from(self.index.client.get_block_count()?).unwrap() + 1;
     let starting_index_height = self.height;
@@ -71,7 +71,7 @@ impl Updater<'_> {
       Some(progress_bar)
     };
 
-    let rx = Self::fetch_blocks_from(self.index, self.height)?;
+    let rx = Self::fetch_blocks_from(self.index, self.height, safety)?;
 
     let (mut output_sender, mut txout_receiver) = Self::spawn_fetcher(self.index)?;
 
@@ -153,12 +153,13 @@ impl Updater<'_> {
   fn fetch_blocks_from(
     index: &Index,
     mut height: u32,
+    safety: u32,
   ) -> Result<std::sync::mpsc::Receiver<BlockData>> {
     let (tx, rx) = std::sync::mpsc::sync_channel(32);
 
     let first_index_height = index.first_index_height;
 
-    let height_limit = index.height_limit;
+    let height_limit = Some(index.height_limit.unwrap_or(u32::MAX).min(u32::try_from(index.client.get_block_count()?).unwrap() + 1 - safety));
 
     let client = index.settings.bitcoin_rpc_client(None)?;
 

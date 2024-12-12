@@ -34,6 +34,8 @@ pub(crate) struct WalletCommand {
   pub(crate) name: String,
   #[arg(long, alias = "nosync", help = "Do not update index.")]
   pub(crate) no_sync: bool,
+  #[arg(long, alias = "safety", help = "Allow the index to be this many block out of date.")]
+  pub(crate) safety: Option<u32>,
   #[arg(
     long,
     help = "Use ord running at <SERVER_URL>. [default: http://localhost:80]"
@@ -103,6 +105,7 @@ impl WalletCommand {
     let wallet = WalletConstructor::construct(
       self.name.clone(),
       self.no_sync,
+      self.safety.unwrap_or_default(),
       settings.clone(),
       self
         .server_url

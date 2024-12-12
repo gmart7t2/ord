@@ -5,6 +5,7 @@ pub(crate) struct WalletConstructor {
   ord_client: reqwest::blocking::Client,
   name: String,
   no_sync: bool,
+  safety: u32,
   rpc_url: Url,
   settings: Settings,
 }
@@ -13,6 +14,7 @@ impl WalletConstructor {
   pub(crate) fn construct(
     name: String,
     no_sync: bool,
+    safety: u32,
     settings: Settings,
     rpc_url: Url,
   ) -> Result<Wallet> {
@@ -38,6 +40,7 @@ impl WalletConstructor {
         .build()?,
       name,
       no_sync,
+      safety,
       rpc_url,
       settings,
     }
@@ -77,6 +80,7 @@ impl WalletConstructor {
           .text()?
           .parse::<u64>()
           .expect("wallet failed to talk to server. Make sure `ord server` is running.")
+          + self.safety as u64
           >= chain_block_count
         {
           break;

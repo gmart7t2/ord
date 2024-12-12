@@ -136,6 +136,8 @@ pub struct Server {
     help = "Poll Bitcoin Core every <POLLING_INTERVAL>."
   )]
   pub(crate) polling_interval: humantime::Duration,
+  #[arg(long, help = "Number of blocks to stay back from the chain tip to help avoid reorgs. [default: 0]")]
+  pub(crate) safety: Option<u32>,
 }
 
 impl Server {
@@ -150,7 +152,7 @@ impl Server {
         }
 
         if !self.no_sync {
-          if let Err(error) = index_clone.update() {
+          if let Err(error) = index_clone.update_with_safety(self.safety.unwrap_or_default()) {
             log::warn!("Updating index: {error}");
           }
         }

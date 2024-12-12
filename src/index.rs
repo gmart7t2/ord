@@ -644,6 +644,10 @@ impl Index {
   }
 
   pub fn update(&self) -> Result {
+    self.update_with_safety(0)
+  }
+
+  pub fn update_with_safety(&self, safety: u32) -> Result {
     loop {
       let wtx = self.begin_write()?;
 
@@ -661,7 +665,7 @@ impl Index {
         sat_ranges_since_flush: 0,
       };
 
-      match updater.update_index(wtx) {
+      match updater.update_index(wtx, safety) {
         Ok(ok) => return Ok(ok),
         Err(err) => {
           log::info!("{}", err.to_string());
