@@ -1,6 +1,13 @@
 use {
   super::*,
+  ::webrtc::ice_transport::ice_candidate::RTCIceCandidateInit,
+  ::webrtc::peer_connection::sdp::sdp_type::RTCSdpType,
+  axum::extract::ws::{Message, WebSocket},
+  axum::{extract::WebSocketUpgrade, response::IntoResponse},
+  serde::{Deserialize, Serialize},
   serde_hex::{SerHex, Strict},
+  std::sync::Arc,
+  tokio::sync::Mutex,
 };
 
 pub use crate::{
@@ -9,7 +16,79 @@ pub use crate::{
     BlocksHtml as Blocks, RuneHtml as Rune, RunesHtml as Runes, StatusHtml as Status,
     TransactionHtml as Transaction,
   },
+  webrtc::WebRTCService,
 };
+
+#[derive(Serialize, Deserialize)]
+struct CandidateJSON {
+  candidate: String,
+  sdp_mid: Option<String>,
+  sdp_mline_index: Option<u16>,
+}
+
+// WebRTC signaling endpoint
+pub async fn signaling_endpoint(
+  ws: WebSocketUpgrade,
+  state: Arc<Mutex<WebRTCService>>,
+) -> impl IntoResponse {
+  ws.on_upgrade(move |mut socket| async move {
+    // WebRTC signaling logic
+    let webrtc_service = state.lock().await;
+
+    // Example signaling flow: receive offer, send answer
+    if let Some(offer) = receive_offer(&mut socket).await {
+      webrtc_service
+        .set_remote_description(offer.clone(), RTCSdpType::Offer)
+        .await
+        .expect("Failed to set remote description");
+      let answer = webrtc_service.create_offer();
+      send_answer(&mut socket, answer.await.expect("Failed to get answer")).await;
+
+      // Handle ICE candidates
+      while let Some(candidate_str) = receive_ice_candidate(&mut socket).await {
+        // Construct RTCIceCandidateInit
+        let candidate_init = RTCIceCandidateInit {
+          candidate: candidate_str.clone(), // Assuming candidate_str is the candidate string
+          sdp_mid: Some("0".to_string()),   // Placeholder value for SDP mid
+          sdp_mline_index: Some(0),         // Placeholder value for SDP media line index
+          username_fragment: None,          // Assuming username_fragment is optional
+        };
+
+        webrtc_service
+          .handle_ice_candidate(candidate_init)
+          .await
+          .expect("Failed to handle ICE candidate");
+        webrtc_service
+          .set_remote_description(offer.clone(), RTCSdpType::Offer)
+          .await
+          .expect("Failed to set remote description");
+      }
+    }
+  })
+}
+
+// Helper functions for signaling
+async fn receive_offer(socket: &mut WebSocket) -> Option<String> {
+  if let Some(Ok(Message::Text(offer))) = socket.recv().await {
+    Some(offer)
+  } else {
+    None
+  }
+}
+
+async fn send_answer(socket: &mut WebSocket, sdp: String) {
+  if socket.send(Message::Text(sdp)).await.is_err() {
+    eprintln!("Failed to send SDP answer.");
+  }
+}
+
+async fn receive_ice_candidate(socket: &mut WebSocket) -> Option<String> {
+  if let Some(Ok(Message::Text(candidate))) = socket.recv().await {
+    Some(candidate)
+  } else {
+    None
+  }
+}
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Block {

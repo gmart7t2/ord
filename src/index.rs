@@ -33,8 +33,46 @@ use {
     collections::HashMap,
     io::{BufWriter, Write},
     sync::Once,
+    sync::PoisonError,
   },
 };
+
+use crate::webrtc::WebRTCService;
+
+pub struct WebRTCState {
+  pub sessions: Mutex<HashMap<String, Arc<WebRTCService>>>,
+}
+
+// Default trait implementation for WebRTCState
+impl Default for WebRTCState {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
+impl WebRTCState {
+  pub fn new() -> Self {
+    WebRTCState {
+      sessions: Mutex::new(HashMap::new()),
+    }
+  }
+
+  pub async fn add_session(&self, id: String, service: WebRTCService) {
+    match self.sessions.lock() {
+      Ok(mut sessions) => {
+        sessions.insert(id, Arc::new(service)); // Wrap service in Arc
+      }
+      Err(PoisonError { .. }) => {
+        eprintln!("Failed to acquire lock on sessions");
+      }
+    }
+  }
+
+  pub async fn get_session(&self, id: &str) -> Option<Arc<WebRTCService>> {
+    let sessions = self.sessions.lock().unwrap();
+    sessions.get(id).map(Arc::clone)
+  }
+}
 
 pub use self::entry::RuneEntry;
 
