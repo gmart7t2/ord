@@ -2026,7 +2026,7 @@ impl Server {
             .flatten()
             .unwrap();
 
-          api::ChildInscriptionRecursive {
+          api::RelativeInscriptionRecursive {
             charms: Charm::charms(entry.charms),
             fee: entry.fee,
             height: entry.height,
@@ -2266,7 +2266,7 @@ impl Server {
             .flatten()
             .unwrap();
 
-          api::ParentInscriptionRecursive {
+          api::RelativeInscriptionRecursive {
             charms: Charm::charms(entry.charms),
             fee: entry.fee,
             height: entry.height,
