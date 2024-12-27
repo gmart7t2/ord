@@ -18,6 +18,7 @@ pub mod traits;
 pub mod verify;
 pub mod wallet;
 pub mod wallets;
+pub mod bitchat;
 
 #[derive(Debug, Parser)]
 pub(crate) enum Subcommand {
@@ -57,6 +58,8 @@ pub(crate) enum Subcommand {
   Wallet(wallet::WalletCommand),
   #[command(about = "List all Bitcoin Core wallets")]
   Wallets,
+  #[command(about = "Open the Bitchat interface in your browser")]
+  Bitchat,
 }
 
 impl Subcommand {
@@ -85,6 +88,7 @@ impl Subcommand {
       Self::Verify(verify) => verify.run(),
       Self::Wallet(wallet) => wallet.run(settings),
       Self::Wallets => wallets::run(settings),
+      Self::Bitchat => bitchat::Bitchat::run(),
     }
   }
 }
