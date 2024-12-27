@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <title>BitChat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Include PeerJS -->
+  <script src="https://unpkg.com/peerjs@1.3.2/dist/peerjs.min.js"></script>
+  <style>
+    /* CSS Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Root Variables */
+    :root {
+      --primary-color: #f7931a;
+      /* Bitcoin Orange */
+      --secondary-color: #c0c0c0;
+      /* Windows 98 Gray */
+      --background-color: #1e1e1e;
+      /* Dark Background */
+      --text-color: #ffffff;
+      /* White Text */
+      --border-color: #404040;
+      /* Dark Gray Border */
+      --button-hover: #f0f0f0;
+      /* Light Gray Hover */
+      --titlebar-color: linear-gradient(to right, #f7931a, #ffcc80);
+      --font-family: 'Tahoma', 'Verdana', sans-serif;
+      /* Windows 98 Fonts */
+      --pin-overlay-color: rgba(0, 0, 0, 0.7);
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--background-color);
+      color: var(--text-color);
+    }
+
+    .window {
+      width: 90%;
+      max-width: 1200px;
+      background: var(--secondary-color);
+      border: 2px solid var(--border-color);
+      margin: 20px auto;
+      box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: row;
+    }
+
+    .main-content {
+      flex: 3;
+      padding: 15px;
+    }
+
+    .chat-sidebar {
+      flex: 1;
+      border-left: 2px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      background: var(--background-color);
+      padding: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .titlebar {
+      background: var(--titlebar-color);
+      color: var(--text-color);
+      padding: 5px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .section {
+      background: var(--background-color);
+      border: 2px solid var(--border-color);
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 5px;
+    }
+
+    .section h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+    }
+
+    .section p {
+      margin-bottom: 10px;
+    }
+
+    button {
+      background: var(--secondary-color);
+      color: var(--text-color);
+      border: 2px solid var(--border-color);
+      padding: 8px 12px;
+      font-family: var(--font-family);
+      cursor: pointer;
+      margin: 5px;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: var(--button-hover);
+      color: var(--text-color);
+    }
+
+    input,
+    textarea {
+      background: var(--secondary-color);
+      border: 2px solid var(--border-color);
+      padding: 8px;
+      width: 100%;
+      margin-bottom: 10px;
+      color: var(--text-color);
+      resize: none;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #e0e0e0;
+    }
+
+    .video-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      position: relative;
+    }
+
+    .video-wrapper {
+      flex: 1 1 45%;
+      max-width: 45%;
+      position: relative;
+      border: 2px solid var(--border-color);
+      border-radius: 5px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    video {
+      width: 100%;
+      height: auto;
+      background: #000;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .video-wrapper {
+        flex-basis: 100%;
+        max-width: 100%;
+      }
+
+      .window {
+        flex-direction: column;
+      }
+
+      .chat-sidebar {
+        border-left: none;
+        border-top: 2px solid var(--border-color);
+      }
+    }
+
+    .status {
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      border: 2px solid var(--border-color);
+      padding: 10px;
+      background: var(--background-color);
+    }
+
+    .chat-messages p {
+      margin-bottom: 5px;
+      word-wrap: break-word;
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 5px;
+    }
+
+    .chat-input textarea {
+      flex: 1;
+      height: 50px;
+    }
+
+    .chat-input button {
+      flex-shrink: 0;
+      height: 50px;
+    }
+
+    /* Styles for role selection */
+    .role-selection {
+      display: flex;
+      margin-bottom: 15px;
+    }
+
+    .role-selection label {
+      margin-right: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .role-selection input {
+      margin-right: 5px;
+    }
+
+    /* Styles for username section */
+    #username-section {
+      margin-bottom: 20px;
+    }
+
+    /* Styles for screen share button */
+    #share-screen {
+      background-color: #4CAF50;
+      /* Green */
+    }
+
+    #share-screen:hover {
+      background-color: #45a049;
+    }
+
+    /* Label for screen sharing */
+    .screen-share-label {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 0.8rem;
+    }
+
+    /* Styles for Received Files Section */
+    .received-files {
+      flex: 1;
+      overflow-y: auto;
+      margin-top: 15px;
+      border: 2px solid var(--border-color);
+      padding: 10px;
+      background: var(--background-color);
+      border-radius: 5px;
+    }
+
+    .received-files h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+    }
+
+    .file-item {
+      margin-bottom: 10px;
+    }
+
+    .file-item a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .file-item a:hover {
+      text-decoration: underline;
+    }
+
+    /* Styles for Start Audio Button */
+    #start-audio {
+      background-color: #2196F3;
+      /* Blue */
+    }
+
+    #start-audio:hover {
+      background-color: #0b7dda;
+    }
+
+    /* Styles for Video Controls */
+    .video-controls {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      display: flex;
+      gap: 5px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .video-wrapper:hover .video-controls {
+      opacity: 1;
+    }
+
+    .video-controls button {
+      background: rgba(255, 255, 255, 0.3);
+      border: none;
+      color: var(--text-color);
+      padding: 5px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .video-controls button:hover {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Pin Overlay Removed */
+
+    /* Picture in Picture Icon Styling */
+    .video-controls button.pip-button::before {
+      content: '📺 PiP';
+    }
+
+    /* Hidden Class */
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="window">
+    <div class="main-content">
+      <div class="titlebar">
+        <div>Ordos Meet</div>
+      </div>
+
+      <div class="window-content">
+        <!-- Username Section -->
+        <div class="section" id="username-section">
+          <h2>Set Your Username</h2>
+          <input type="text" id="username-input" placeholder="Enter your username (e.g., Alice)" />
+          <div class="controls">
+            <button onclick="setUsername()">Continue</button>
+          </div>
+        </div>
+
+        <!-- Main Interface -->
+        <div id="main-interface" style="display: none;">
+          <div class="section">
+            <h2>Get Started</h2>
+            <div class="role-selection">
+              <label>
+                <input type="radio" name="role" value="host" onclick="selectRole('host')" checked>
+                Create Room
+              </label>
+              <label>
+                <input type="radio" name="role" value="participant" onclick="selectRole('participant')">
+                Join Room
+              </label>
+            </div>
+
+            <!-- Host Section -->
+            <div id="host-section">
+              <input type="text" id="room-id" placeholder="Enter Room ID (e.g., snoop3)" />
+              <div class="controls">
+                <button onclick="createOrJoinRoom('host')" id="create-room-button">Create Room</button>
+              </div>
+            </div>
+
+            <!-- Participant Section -->
+            <div id="participant-section" style="display: none;">
+              <input type="text" id="room-id-join" placeholder="Enter Room ID to join" />
+              <div class="controls">
+                <button onclick="createOrJoinRoom('participant')" id="join-room-button">Join Room</button>
+              </div>
+            </div>
+
+            <p id="status-message" class="status"></p>
+          </div>
+
+          <div class="section">
+            <h2>Controls</h2>
+            <div class="controls">
+              <button id="start-video" onclick="startVideo()" disabled>
+                Start Video
+              </button>
+              <button id="start-audio" onclick="startAudio()" disabled>
+                Start Audio
+              </button>
+              <button id="mute-audio" onclick="toggleAudio()" disabled>
+                Mute Audio
+              </button>
+              <button id="mute-video" onclick="toggleVideo()" disabled>
+                Stop Video
+              </button>
+              <button id="share-screen" onclick="toggleScreenShare()" disabled>
+                Share Screen
+              </button>
+              <button id="send-file" onclick="sendFile()" disabled>
+                Send File
+              </button>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Video Streams</h2>
+            <div class="video-container" id="video-container">
+              <div class="video-wrapper" id="local-video-wrapper">
+                <p id="local-video-label">Your Video</p>
+                <video id="local-video" autoplay muted></video>
+                <!-- Video Controls for Local Video -->
+                <div class="video-controls">
+                  <button class="pip-button" onclick="togglePictureInPicture('local-video')">📺 PiP</button>
+                  <button onclick="toggleFullScreen('local-video')">🔲 Full Screen</button>
+                </div>
+              </div>
+              <!-- Remote videos will be appended here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Sidebar -->
+    <div class="chat-sidebar hidden" id="chat-sidebar">
+      <h2>Chat</h2>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input">
+        <textarea id="chat-input" placeholder="Type a message..." disabled></textarea>
+        <button onclick="sendMessage()" id="send-button" disabled>
+          Send
+        </button>
+      </div>
+
+      <!-- Received Files Section -->
+      <div class="received-files" id="received-files">
+        <h2>Received Files</h2>
+        <div id="files-list"></div>
+      </div>
+    </div>
+
+    <!-- Pin Overlay Removed -->
+
+    <!-- Picture in Picture Icon Styling is handled via ::before pseudo-element -->
+    <script>
+      let peer;
+      let localStream;
+      let screenStream = null; // Initialize screenStream as null
+      let connections = {}; // For data and media connections
+      let isPeerInitialized = false;
+      let isHost = false;
+      let roomId = '';
+      let peerList = []; // List of peer IDs in the room
+      let username = ''; // User's chosen username
+      let isAudioOnly = false; // Flag to indicate if user joined with audio only
+
+      /**
+       * Sets the username entered by the user.
+       */
+      function setUsername() {
+        const usernameInput = document.getElementById('username-input').value.trim();
+        if (!usernameInput) {
+          alert('Please enter a username.');
+          return;
+        }
+        username = usernameInput;
+        document.getElementById('username-section').style.display = 'none';
+        document.getElementById('main-interface').style.display = 'block';
+        document.getElementById('local-video-label').innerText = username + ' (You)';
+        console.log(`Username set to "${username}"`);
+      }
+
+      /**
+       * Toggles the visibility of host and participant sections based on role selection.
+       * @param {string} role - The selected role ('host' or 'participant').
+       */
+      function selectRole(role) {
+        if (role === 'host') {
+          document.getElementById('host-section').style.display = 'block';
+          document.getElementById('participant-section').style.display = 'none';
+        } else {
+          document.getElementById('host-section').style.display = 'none';
+          document.getElementById('participant-section').style.display = 'block';
+        }
+      }
+
+      /**
+       * Initializes PeerJS and handles room creation or joining.
+       * @param {string} role - The role of the user ('host' or 'participant').
+       */
+      function createOrJoinRoom(role) {
+        if (isPeerInitialized) {
+          alert('You are already connected to a room.');
+          return;
+        }
+
+        // Determine room ID based on role
+        if (role === 'host') {
+          roomId = document.getElementById('room-id').value.trim();
+          if (!roomId) {
+            alert('Please enter a Room ID.');
+            return;
+          }
+          isHost = true;
+          console.log(`Creating room with ID: ${roomId}`);
+
+          // Try connecting to a public PeerJS server first
+          peer = new Peer(roomId, {
+            // Option 1: Use PeerJS public server
+            host: '0.peerjs.com',
+            port: 443,
+            secure: true,
+            debug: 3, // Add debug logging
+            config: { // Add ICE server configuration
+              'iceServers': [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+              ]
+            }
+          });
+        } else {
+          roomId = document.getElementById('room-id-join').value.trim();
+          if (!roomId) {
+            alert('Please enter a Room ID to join.');
+            return;
+          }
+          isHost = false;
+          console.log(`Joining room with ID: ${roomId}`);
+
+          // Use same configuration for participants
+          peer = new Peer(undefined, {
+            host: '0.peerjs.com',
+            port: 443,
+            secure: true,
+            debug: 3,
+            config: {
+              'iceServers': [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+              ]
+            }
+          });
+        }
+
+        initializePeerEvents();
+
+        // Disable the Create/Join button to prevent multiple clicks
+        if (role === 'host') {
+          document.getElementById('create-room-button').disabled = true;
+          document.getElementById('create-room-button').innerText = 'Creating...';
+        } else {
+          document.getElementById('join-room-button').disabled = true;
+          document.getElementById('join-room-button').innerText = 'Joining...';
+        }
+      }
+
+      /**
+       * Sets up event listeners for PeerJS events.
+       */
+      function initializePeerEvents() {
+        peer.on('open', (id) => {
+          isPeerInitialized = true;
+          console.log(`PeerJS initialized with ID: ${id}`);
+          document.getElementById('status-message').innerText =
+            'Connected as "' + username + '".';
+          document.getElementById('chat-input').disabled = false;
+          document.getElementById('send-button').disabled = false;
+          document.getElementById('start-video').disabled = false;
+          document.getElementById('start-audio').disabled = false;
+          document.getElementById('share-screen').disabled = false;
+          document.getElementById('send-file').disabled = false;
+
+          // Show Chat Sidebar
+          document.getElementById('chat-sidebar').classList.remove('hidden');
+
+          // Join or create the room
+          joinOrCreateRoomAfterPeerOpen(id);
+        });
+
+        peer.on('error', (err) => {
+          console.error('PeerJS Error:', err);
+          alert('An error occurred with the peer connection: ' +
+            err.type + ' - ' + err.message);
+        });
+
+        peer.on('connection', (conn) => {
+          console.log(`Incoming data connection from ${conn.peer}`);
+          setupDataConnection(conn);
+        });
+
+        // Handle incoming media calls
+        peer.on('call', (call) => {
+          console.log(`Incoming media call from ${call.peer}`);
+          if (localStream) {
+            call.answer(localStream); // Answer with localStream to send host's stream
+            setupMediaCall(call);
+          } else {
+            console.warn('Local stream not available. Cannot answer call.');
+            call.answer(); // Answer without a stream
+          }
+        });
+      }
+
+      /**
+       * Handles joining or creating a room after PeerJS is open.
+       * @param {string} myPeerId - The PeerJS ID of the current user.
+       */
+      function joinOrCreateRoomAfterPeerOpen(myPeerId) {
+        if (isHost) {
+          // Host initializes the peer list with themselves
+          peerList = [{ peerId: myPeerId, username: username }];
+          console.log(`Room "${roomId}" created. Waiting for participants...`);
+
+          // Automatically start the host's video to ensure new participants can see it
+          startVideo();
+        } else {
+          // Participant connects to the host
+          console.log(`Connecting to host with Peer ID: ${roomId}`);
+          connectToPeer(roomId); // roomId is the host's Peer ID
+
+          // Send our Peer ID and username to the host to receive the peer list
+          const conn = peer.connect(roomId);
+          setupDataConnection(conn); // Ensure we set up the data connection
+
+          conn.on('open', () => {
+            console.log(`Data connection to host (${roomId}) established.`);
+            conn.send({ type: 'NEW_PARTICIPANT', peerId: myPeerId, username: username });
+          });
+        }
+      }
+
+      /**
+       * Establishes connections to other peers.
+       * @param {string} peerId - The PeerJS ID to connect to.
+       * @param {string} [remoteUsername] - The username of the remote peer.
+       */
+      function connectToPeer(peerId, remoteUsername) {
+        if (connections[peerId] && connections[peerId].dataConn && connections[peerId].dataConn.open) {
+          console.log(`Already connected to Peer ID: ${peerId}`);
+          return; // Already connected
+        }
+
+        console.log(`Connecting to Peer ID: ${peerId}`);
+        // Initialize the connections[peerId] object
+        connections[peerId] = connections[peerId] || {};
+
+        // Store the remote username if provided
+        if (remoteUsername) {
+          connections[peerId].username = remoteUsername;
+        }
+
+        // Data connection
+        const dataConn = peer.connect(peerId);
+        setupDataConnection(dataConn);
+
+        // Media call
+        if (localStream) {
+          console.log(`Initiating media call to Peer ID: ${peerId}`);
+          const mediaCall = peer.call(peerId, localStream);
+          setupMediaCall(mediaCall);
+        } else {
+          console.log(`Local stream not available. Cannot initiate media call to Peer ID: ${peerId}`);
+        }
+      }
+
+      /**
+       * Sets up data connections for chat, signaling, and file transfers.
+       * @param {Peer.DataConnection} conn - The data connection object.
+       */
+      function setupDataConnection(conn) {
+        connections[conn.peer] = connections[conn.peer] || {};
+        connections[conn.peer].dataConn = conn;
+
+        conn.on('open', () => {
+          console.log(`Data connection established with ${conn.peer}`);
+
+          // Exchange usernames
+          conn.send({ type: 'USERNAME', username: username });
+
+          if (isHost) {
+            // Host updates peer list and sends it to all participants
+            if (!peerList.find(p => p.peerId === conn.peer)) {
+              // Add new participant to the peer list
+              peerList.push({ peerId: conn.peer, username: connections[conn.peer].username || 'Unknown' });
+              console.log(`New participant added: ${conn.peer} (${connections[conn.peer].username || 'Unknown'})`);
+              broadcastPeerList();
+
+              // Host initiates a media call to the new participant with their localStream
+              if (localStream) {
+                console.log(`Host initiating media call to new participant: ${conn.peer}`);
+                const mediaCall = peer.call(conn.peer, localStream);
+                setupMediaCall(mediaCall);
+              } else {
+                console.log('Host localStream is not available. Cannot initiate media call.');
+              }
+            }
+          }
+        });
+
+        conn.on('data', (data) => {
+          console.log(`Data received from ${conn.peer}:`, data);
+          if (data.type === 'USERNAME') {
+            connections[conn.peer].username = data.username;
+            if (isHost) {
+              // Update peerList with the username
+              let peerInfo = peerList.find(p => p.peerId === conn.peer);
+              if (peerInfo) {
+                peerInfo.username = data.username;
+                broadcastPeerList();
+              }
+            }
+          } else if (isHost && data.type === 'NEW_PARTICIPANT') {
+            // New participant joined, update peer list and inform everyone
+            if (!peerList.find(p => p.peerId === data.peerId)) {
+              peerList.push({ peerId: data.peerId, username: data.username });
+              console.log(`New participant added: ${data.peerId} (${data.username})`);
+              broadcastPeerList();
+
+              // Host initiates a media call to the new participant
+              if (localStream) {
+                console.log(`Host initiating media call to new participant: ${data.peerId}`);
+                const mediaCall = peer.call(data.peerId, localStream);
+                setupMediaCall(mediaCall);
+              } else {
+                console.log('Host localStream is not available. Cannot initiate media call.');
+              }
+            }
+          } else if (data.type === 'REQUEST_USERNAME') {
+            // Host requests username, send it
+            conn.send({ type: 'USERNAME', username: username });
+          } else if (data.type === 'PEER_LIST') {
+            // Receive updated peer list
+            peerList = data.peerList;
+            console.log('Updated Peer List:', peerList);
+            peerList.forEach(peerInfo => {
+              const peerId = peerInfo.peerId;
+              if (peerId !== peer.id && (!connections[peerId] || !connections[peerId].dataConn || !connections[peerId].dataConn.open)) {
+                console.log(`Connecting to new Peer ID from list: ${peerId}`);
+                connectToPeer(peerId, peerInfo.username);
+              }
+            });
+          } else if (data.type === 'HOST_LEFT') {
+            alert('Host has left the room.');
+            // Optionally, you can redirect the user or handle host disconnection
+          } else if (data.type === 'CHAT') {
+            // Regular chat message
+            displayMessage(connections[conn.peer].username || conn.peer, data.message);
+          } else if (data.type === 'FILE') {
+            // Handle incoming file
+            handleIncomingFile(data, conn.peer);
+          }
+        });
+
+        conn.on('close', () => {
+          console.log(`Data connection with ${conn.peer} closed.`);
+          removeRemoteVideo(conn.peer);
+          delete connections[conn.peer];
+          if (isHost) {
+            // Remove peer from list and inform others
+            peerList = peerList.filter(p => p.peerId !== conn.peer);
+            broadcastPeerList();
+          }
+        });
+
+        conn.on('error', (err) => {
+          console.error(`Data connection error with ${conn.peer}:`, err);
+        });
+      }
+
+      /**
+       * Broadcasts the updated peer list to all connected participants.
+       */
+      function broadcastPeerList() {
+        console.log('Broadcasting updated peer list to all participants.');
+        // Host sends updated peer list to all participants
+        for (let peerId in connections) {
+          const conn = connections[peerId].dataConn;
+          if (conn && conn.open) {
+            conn.send({ type: 'PEER_LIST', peerList: peerList });
+          }
+        }
+      }
+
+      /**
+       * Sets up media calls for video/audio streams.
+       * @param {Peer.MediaConnection} call - The media call object.
+       */
+      function setupMediaCall(call) {
+        connections[call.peer] = connections[call.peer] || {};
+        connections[call.peer].mediaCall = call;
+
+        call.on('stream', (remoteStream) => {
+          console.log(`Received remote stream from ${call.peer}`);
+          addRemoteVideo(call.peer, remoteStream);
+        });
+
+        call.on('close', () => {
+          console.log(`Media call with ${call.peer} ended.`);
+          removeRemoteVideo(call.peer);
+          delete connections[call.peer];
+        });
+
+        call.on('error', (err) => {
+          console.error(`Media call error with ${call.peer}:`, err);
+        });
+      }
+
+      /**
+       * Adds a remote video stream to the video container.
+       * @param {string} peerId - The PeerJS ID of the remote peer.
+       * @param {MediaStream} stream - The media stream of the remote peer.
+       */
+      function addRemoteVideo(peerId, stream) {
+        const videoContainer = document.getElementById('video-container');
+
+        if (document.getElementById('video-' + peerId)) {
+          console.log(`Video for Peer ID ${peerId} already exists.`);
+          return;
+        }
+
+        const videoWrapper = document.createElement('div');
+        videoWrapper.className = 'video-wrapper';
+        videoWrapper.id = 'video-wrapper-' + peerId;
+
+        const label = document.createElement('p');
+        const username = connections[peerId].username || 'Peer: ' + peerId;
+        label.innerText = username;
+
+        const videoElement = document.createElement('video');
+        videoElement.id = 'video-' + peerId;
+        videoElement.autoplay = true;
+        videoElement.srcObject = stream;
+
+        // Video Controls for Remote Videos
+        const videoControls = document.createElement('div');
+        videoControls.className = 'video-controls';
+
+        const pipButton = document.createElement('button');
+        pipButton.className = 'pip-button';
+        pipButton.onclick = () => togglePictureInPicture(videoElement.id);
+        pipButton.innerText = '��� PiP';
+
+        const fullScreenButton = document.createElement('button');
+        fullScreenButton.innerText = '🔲 Full Screen';
+        fullScreenButton.onclick = () => toggleFullScreen(videoElement.id);
+
+        videoControls.appendChild(pipButton);
+        videoControls.appendChild(fullScreenButton);
+
+        videoWrapper.appendChild(label);
+        videoWrapper.appendChild(videoElement);
+        videoWrapper.appendChild(videoControls);
+        videoContainer.appendChild(videoWrapper);
+
+        console.log(`Added remote video for Peer ID: ${peerId}`);
+      }
+
+      /**
+       * Removes a remote video stream from the video container.
+       * @param {string} peerId - The PeerJS ID of the remote peer.
+       */
+      function removeRemoteVideo(peerId) {
+        const videoWrapper = document.getElementById('video-wrapper-' + peerId);
+        if (videoWrapper) {
+          videoWrapper.parentNode.removeChild(videoWrapper);
+          console.log(`Removed remote video for Peer ID: ${peerId}`);
+        }
+      }
+
+      /**
+       * Starts the local video and audio stream.
+       */
+      function startVideo() {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+          .then((stream) => {
+            localStream = stream;
+            const localVideo = document.getElementById('local-video');
+            localVideo.srcObject = stream;
+            localVideo.poster = ''; // Remove any placeholder
+            localVideo.style.background = '#000'; // Reset background
+
+            document.getElementById('mute-audio').disabled = false;
+            document.getElementById('mute-video').disabled = false;
+            document.getElementById('share-screen').disabled = false;
+            document.getElementById('start-video').disabled = true;
+            document.getElementById('start-audio').disabled = true;
+
+            isAudioOnly = false;
+
+            console.log('Local video and audio stream started.');
+
+            // Call all connected peers with our stream
+            for (let peerId in connections) {
+              const conn = connections[peerId];
+              if (conn.mediaCall && conn.mediaCall.open) {
+                console.log(`Already have media call with Peer ID: ${peerId}`);
+                continue;
+              }
+              console.log(`Initiating media call to Peer ID: ${peerId}`);
+              const mediaCall = peer.call(peerId, localStream);
+              setupMediaCall(mediaCall);
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to access webcam and microphone:', err);
+            alert('Please allow access to your webcam and microphone.');
+          });
+      }
+
+      /**
+       * Starts the local audio-only stream.
+       */
+      function startAudio() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then((stream) => {
+            localStream = stream;
+            const localVideo = document.getElementById('local-video');
+            localVideo.srcObject = null; // Remove video stream
+            localVideo.poster = 'https://via.placeholder.com/150?text=Audio+Only'; // Optional: Add a placeholder image
+            localVideo.style.background = '#333'; // Optional: Change background for audio-only
+
+            document.getElementById('mute-audio').disabled = false;
+            document.getElementById('mute-video').disabled = true; // Disable mute video since there's no video
+            document.getElementById('share-screen').disabled = true; // Disable screen sharing since there's no video
+            document.getElementById('start-video').disabled = true;
+            document.getElementById('start-audio').disabled = true;
+
+            isAudioOnly = true;
+
+            console.log('Local audio stream started (audio-only).');
+
+            // Call all connected peers with our stream
+            for (let peerId in connections) {
+              const conn = connections[peerId];
+              if (conn.mediaCall && conn.mediaCall.open) {
+                console.log(`Already have media call with Peer ID: ${peerId}`);
+                continue;
+              }
+              console.log(`Initiating audio-only media call to Peer ID: ${peerId}`);
+              const mediaCall = peer.call(peerId, localStream);
+              setupMediaCall(mediaCall);
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to access microphone:', err);
+            alert('Please allow access to your microphone.');
+          });
+      }
+
+      /**
+       * Toggles the local audio track (mute/unmute).
+       */
+      function toggleAudio() {
+        if (localStream) {
+          localStream.getAudioTracks().forEach(track => {
+            track.enabled = !track.enabled;
+            const isMuted = !track.enabled;
+            document.getElementById('mute-audio').innerText =
+              isMuted ? 'Unmute Audio' : 'Mute Audio';
+            console.log(`Audio ${isMuted ? 'muted' : 'unmuted'}.`);
+          });
+        }
+      }
+
+      /**
+       * Toggles the local video track (stop/start).
+       */
+      function toggleVideo() {
+        if (localStream && !isAudioOnly) {
+          localStream.getVideoTracks().forEach(track => {
+            track.enabled = !track.enabled;
+            const isVideoMuted = !track.enabled;
+            document.getElementById('mute-video').innerText =
+              isVideoMuted ? 'Start Video' : 'Stop Video';
+            console.log(`Video ${isVideoMuted ? 'stopped' : 'started'}.`);
+          });
+        }
+      }
+
+      /**
+       * Toggles screen sharing.
+       */
+      function toggleScreenShare() {
+        const shareButton = document.getElementById('share-screen');
+        if (!screenStream) {
+          // Start screen sharing
+          navigator.mediaDevices.getDisplayMedia({ video: true })
+            .then((stream) => {
+              screenStream = stream;
+              const localVideo = document.getElementById('local-video');
+              localVideo.srcObject = screenStream;
+
+              // Replace video track in all media calls
+              for (let peerId in connections) {
+                const call = connections[peerId].mediaCall;
+                if (call && call.peerConnection) {
+                  const senders = call.peerConnection.getSenders();
+                  const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+                  if (videoSender) {
+                    videoSender.replaceTrack(screenStream.getVideoTracks()[0]);
+                    console.log(`Replaced video track in call with Peer ID: ${peerId}`);
+                  }
+                }
+              }
+
+              shareButton.innerText = 'Stop Sharing';
+              console.log('Screen sharing started.');
+
+              screenStream.getVideoTracks()[0].onended = () => {
+                stopScreenShare();
+              };
+            })
+            .catch((err) => {
+              console.error('Error sharing the screen:', err);
+              alert('Could not share the screen.');
+            });
+        } else {
+          // Stop screen sharing
+          stopScreenShare();
+        }
+      }
+
+      /**
+       * Stops screen sharing and reverts back to the webcam or audio-only stream.
+       */
+      function stopScreenShare() {
+        if (screenStream) {
+          screenStream.getTracks().forEach(track => track.stop());
+          screenStream = null;
+          const localVideo = document.getElementById('local-video');
+          if (isAudioOnly) {
+            localVideo.srcObject = null; // Ensure no video stream
+            localVideo.poster = 'https://via.placeholder.com/150?text=Audio+Only';
+            localVideo.style.background = '#333';
+          } else {
+            localVideo.srcObject = localStream;
+            localVideo.poster = '';
+            localVideo.style.background = '#000';
+          }
+
+          // Replace video track in all media calls
+          for (let peerId in connections) {
+            const call = connections[peerId].mediaCall;
+            if (call && call.peerConnection) {
+              const senders = call.peerConnection.getSenders();
+              const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+              if (videoSender) {
+                if (isAudioOnly) {
+                  videoSender.replaceTrack(null); // Remove video track
+                } else {
+                  videoSender.replaceTrack(localStream.getVideoTracks()[0]);
+                }
+                console.log(`Replaced video track back to ${isAudioOnly ? 'null' : 'webcam'} in call with Peer ID: ${peerId}`);
+              }
+            }
+          }
+
+          shareButton.innerText = 'Share Screen';
+          console.log('Screen sharing stopped.');
+        }
+      }
+
+      /**
+       * Sends a chat message to all connected peers.
+       */
+      function sendMessage() {
+        const messageInput = document.getElementById('chat-input');
+        const message = messageInput.value.trim();
+        if (message) {
+          // Send message to all connected peers
+          for (let peerId in connections) {
+            const conn = connections[peerId].dataConn;
+            if (conn && conn.open) {
+              conn.send({ type: 'CHAT', message: message });
+              console.log(`Sent chat message to Peer ID: ${peerId}`);
+            }
+          }
+          displayMessage('You', message);
+          messageInput.value = '';
+        }
+      }
+
+      /**
+       * Sends a file to all connected peers.
+       */
+      function sendFile() {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.onchange = () => {
+          const file = fileInput.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const arrayBuffer = reader.result;
+              // Send file metadata first
+              const fileMetadata = {
+                type: 'FILE',
+                fileName: file.name,
+                fileSize: file.size,
+                fileType: file.type,
+                fileData: arrayBuffer
+              };
+              // Send to all connected peers
+              for (let peerId in connections) {
+                const conn = connections[peerId].dataConn;
+                if (conn && conn.open) {
+                  conn.send(fileMetadata);
+                  console.log(`Sent file "${file.name}" to Peer ID: ${peerId}`);
+                }
+              }
+              displayMessage('You', `Sent file: ${file.name}`);
+            };
+            reader.readAsArrayBuffer(file);
+          }
+        };
+        fileInput.click();
+      }
+
+      /**
+       * Displays a chat message or file in the chat window.
+       * @param {string} sender - The sender's username.
+       * @param {string} message - The message content or file info.
+       * @param {boolean} [isFile=false] - Indicates if the message is a file.
+       */
+      function displayMessage(sender, message, isFile = false) {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageElement = document.createElement('p');
+        if (isFile) {
+          messageElement.innerHTML = `<strong>${sender}:</strong> <em>Sent a file</em>`;
+        } else {
+          messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+        }
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        console.log(`Displayed message from ${sender}: ${message}`);
+      }
+
+      /**
+       * Handles incoming file data.
+       * @param {Object} data - The data received.
+       * @param {string} senderPeerId - The PeerJS ID of the sender.
+       */
+      function handleIncomingFile(data, senderPeerId) {
+        const { fileName, fileSize, fileType, fileData } = data;
+        console.log(`Receiving file "${fileName}" (${fileSize} bytes) from Peer ID: ${senderPeerId}`);
+
+        // Create a blob from the received data
+        const blob = new Blob([fileData], { type: fileType });
+        const url = URL.createObjectURL(blob);
+
+        // Display the received file in the Received Files section
+        const filesList = document.getElementById('files-list');
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `
+          <strong>${connections[senderPeerId].username || senderPeerId}:</strong> 
+          <a href="${url}" download="${fileName}">${fileName}</a> 
+          (${formatBytes(fileSize)})
+        `;
+        filesList.appendChild(fileItem);
+        console.log(`File "${fileName}" received and displayed.`);
+      }
+
+      /**
+       * Formats bytes as human-readable text.
+       * @param {number} bytes - The number of bytes.
+       * @param {number} [decimals=2] - Number of decimals to display.
+       * @returns {string} - Formatted string.
+       */
+      function formatBytes(bytes, decimals = 2) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+      }
+
+      /**
+       * Toggles Picture in Picture mode for a video element.
+       * @param {string} videoId - The ID of the video element.
+       */
+      async function togglePictureInPicture(videoId) {
+        const video = document.getElementById(videoId);
+        if (!('pictureInPictureEnabled' in document)) {
+          alert('Picture-in-Picture is not supported by your browser.');
+          return;
+        }
+
+        try {
+          if (video !== document.pictureInPictureElement) {
+            await video.requestPictureInPicture();
+            console.log(`Entered Picture-in-Picture mode for ${videoId}`);
+          } else {
+            await document.exitPictureInPicture();
+            console.log(`Exited Picture-in-Picture mode for ${videoId}`);
+          }
+        } catch (error) {
+          console.error('Error with Picture-in-Picture:', error);
+          alert('Unable to enter Picture-in-Picture mode.');
+        }
+      }
+
+      /**
+       * Toggles full screen mode for a video element.
+       * @param {string} videoId - The ID of the video element.
+       */
+      function toggleFullScreen(videoId) {
+        const videoElement = document.getElementById(videoId);
+        if (!document.fullscreenElement) {
+          if (videoElement.requestFullscreen) {
+            videoElement.requestFullscreen();
+          } else if (videoElement.webkitRequestFullscreen) { /* Safari */
+            videoElement.webkitRequestFullscreen();
+          } else if (videoElement.msRequestFullscreen) { /* IE11 */
+            videoElement.msRequestFullscreen();
+          }
+          console.log(`Entered full screen for ${videoId}`);
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          }
+          console.log(`Exited full screen for ${videoId}`);
+        }
+      }
+
+      /**
+       * Cleans up connections when the user leaves the page.
+       */
+      window.addEventListener('beforeunload', () => {
+        if (isPeerInitialized) {
+          if (isHost) {
+            // Notify participants that the host is leaving
+            for (let peerId in connections) {
+              const conn = connections[peerId].dataConn;
+              if (conn && conn.open) {
+                conn.send({ type: 'HOST_LEFT' });
+                console.log(`Notified Peer ID: ${peerId} that host is leaving.`);
+              }
+            }
+          }
+          peer.destroy();
+          console.log('PeerJS instance destroyed on unload.');
+        }
+      });
+    </script>
+  </div>
+</body>
+
+</html>

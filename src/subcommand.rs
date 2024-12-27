@@ -1,6 +1,7 @@
 use super::*;
 
 pub mod balances;
+pub mod bitchat;
 pub mod decode;
 pub mod env;
 pub mod epochs;
@@ -57,6 +58,8 @@ pub(crate) enum Subcommand {
   Wallet(wallet::WalletCommand),
   #[command(about = "List all Bitcoin Core wallets")]
   Wallets,
+  #[command(about = "Open the Bitchat interface in your browser")]
+  Bitchat,
 }
 
 impl Subcommand {
@@ -85,6 +88,7 @@ impl Subcommand {
       Self::Verify(verify) => verify.run(),
       Self::Wallet(wallet) => wallet.run(settings),
       Self::Wallets => wallets::run(settings),
+      Self::Bitchat => bitchat::Bitchat::run(),
     }
   }
 }
